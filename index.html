@@ -1,0 +1,1629 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Bank of Career Ed</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Bank">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#E7EBFB">
+<style>
+:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}
+@font-face{font-family:'Comic Neue';font-weight:400;font-style:normal;font-display:swap;src:url(fonts/comic-neue-400.woff2) format('woff2')}
+@font-face{font-family:'Comic Neue';font-weight:700;font-style:normal;font-display:swap;src:url(fonts/comic-neue-700.woff2) format('woff2')}
+</style>
+<style>
+/* Layout: iPad kiosk. Big touch targets, one clear job per screen, everything visual (no sound).
+   Palette: ink navy, bank blue, savings teal, signal gold for the one main action, green/red for money in/out. */
+:root{
+  --bg:#E7EBFB; --surface:#FFFFFF; --ink:#001266; --muted:#3B4A9E; --line:#BFC8F2;
+  --blue:#0024CC; --teal:#001266; --on-color:#FFFFFF;
+  --gold:#0024CC; --on-gold:#FFFFFF;
+  --in:#0B7A4B; --in-soft:#E1F3E9; --out:#B42318; --out-soft:#FCE7E4;
+  --focus:#E67E00; --shadow:0 1px 2px rgba(16,36,58,.08),0 6px 18px rgba(16,36,58,.06);
+  --font-display:'Comic Sans MS','Comic Sans','Comic Neue','Chalkboard SE',cursive,sans-serif;
+  --font-body:'Comic Sans MS','Comic Sans','Comic Neue','Chalkboard SE',cursive,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#00103D; --surface:#0A1C6B; --ink:#E8ECFF; --muted:#B3BFF0; --line:#2A3FA8;
+    --blue:#2F4FE6; --teal:#1A2EB0; --gold:#2F4FE6; --on-gold:#FFFFFF;
+    --in:#55D395; --in-soft:#123B2A; --out:#FF9288; --out-soft:#45201D;
+    --focus:#FFB84D; --shadow:0 1px 2px rgba(0,0,0,.4);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#00103D; --surface:#0A1C6B; --ink:#E8ECFF; --muted:#B3BFF0; --line:#2A3FA8;
+  --blue:#2F4FE6; --teal:#1A2EB0; --gold:#2F4FE6; --on-gold:#FFFFFF;
+  --in:#55D395; --in-soft:#123B2A; --out:#FF9288; --out-soft:#45201D;
+  --focus:#FFB84D; --shadow:0 1px 2px rgba(0,0,0,.4);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:20px;line-height:1.4;
+  padding-block:0;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:4px solid var(--focus);outline-offset:3px}
+h1,h2,h3{font-family:var(--font-display);margin:0;text-wrap:balance;line-height:1.1}
+.wrap{max-width:980px;margin:0 auto;padding-block:20px 32px;min-height:100vh;display:flex;flex-direction:column;gap:20px}
+.num{font-variant-numeric:tabular-nums}
+
+/* top bar */
+.bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.logo{display:flex;align-items:center;gap:12px;font-family:var(--font-display);font-weight:800;font-size:1.35rem;color:var(--blue)}
+:root[data-theme="dark"] .logo{color:var(--ink)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .logo{color:var(--ink)}}
+.logo svg{width:44px;height:44px;flex:none}
+.logo img{height:64px;width:auto;max-width:100%}
+.who{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.who b{font-family:var(--font-display);font-size:1.2rem}
+.btn{min-height:64px;padding:12px 26px;border-radius:14px;border:2px solid var(--line);background:var(--surface);font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:10px}
+.btn.gold{background:var(--gold);color:var(--on-gold);border-color:transparent;font-size:1.15rem}
+.btn.line{border-color:var(--ink)}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.btn svg{width:26px;height:26px;flex:none}
+
+/* start */
+.start{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;text-align:center;padding-block:24px}
+.start .logo{font-size:2rem}
+.start .logo svg{width:72px;height:72px}
+.start .logo img{height:clamp(160px,32vh,260px)}
+.tap{font-size:clamp(2.4rem,7vw,4.2rem);font-weight:800}
+.cue{width:min(420px,90%)}
+.cue svg{width:100%;height:auto;display:block}
+.ring{transform-origin:300px 130px;animation:pulse 2.4s ease-out infinite;opacity:0}
+.ring.r2{animation-delay:.8s}.ring.r3{animation-delay:1.6s}
+.card-ico{animation:slide 2.4s ease-in-out infinite}
+@keyframes pulse{0%{transform:scale(.4);opacity:.7}100%{transform:scale(1.5);opacity:0}}
+@keyframes slide{0%,100%{transform:translate(0,0)}50%{transform:translate(70px,0)}}
+@media (prefers-reduced-motion: reduce){.ring,.card-ico{animation:none}.ring{opacity:.35}}
+.foot{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;font-size:.8rem;color:var(--muted)}
+.foot button{border:0;background:none;color:var(--muted);text-decoration:underline;font-size:.8rem;padding:8px}
+
+/* welcome / messages */
+.center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center}
+.big{font-size:clamp(3rem,10vw,6rem);font-weight:800;color:var(--blue)}
+:root[data-theme="dark"] .big{color:var(--ink)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .big{color:var(--ink)}}
+.name{font-size:1.8rem;font-family:var(--font-display);font-weight:700}
+.dots{display:flex;gap:10px}
+.dots i{width:14px;height:14px;border-radius:50%;background:var(--blue);animation:blink 1.2s infinite}
+.dots i:nth-child(2){animation-delay:.2s}.dots i:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,80%,100%{opacity:.2}40%{opacity:1}}
+@media (prefers-reduced-motion: reduce){.dots i{animation:none}}
+.note{background:var(--surface);border:2px solid var(--line);border-radius:16px;padding:18px 22px;max-width:620px}
+.code{font-family:ui-monospace,Menlo,monospace;background:var(--bg);padding:2px 8px;border-radius:6px}
+
+/* home */
+h2.title{font-size:1.9rem}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px}
+.tile{display:flex;flex-direction:column;align-items:flex-start;gap:6px;text-align:left;border:0;border-radius:20px;padding:24px 26px;color:var(--on-color);box-shadow:var(--shadow);min-height:170px;min-width:0}
+.tile.checking{background:var(--blue)}.tile.savings{background:var(--teal)}
+.tile .lbl{font-weight:700;font-size:1.2rem;opacity:.95}
+.tile .amt{font-family:var(--font-display);font-weight:800;font-size:clamp(2.4rem,7vw,3.4rem);line-height:1.05}
+.tile .hint{margin-top:auto;display:flex;align-items:center;gap:6px;font-weight:700;opacity:.95}
+.tile .hint svg{width:22px;height:22px}
+.actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px}
+.action{min-height:96px;border-radius:20px;border:0;background:var(--gold);color:var(--on-gold);font-family:var(--font-display);font-weight:800;font-size:1.6rem;display:flex;align-items:center;justify-content:center;gap:14px;box-shadow:var(--shadow)}
+.action svg{width:40px;height:40px}
+
+/* detail */
+.panel{background:var(--surface);border:2px solid var(--line);border-radius:20px;padding:22px;box-shadow:var(--shadow);min-width:0}
+.head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
+.head .bal{font-family:var(--font-display);font-weight:800;font-size:clamp(2.2rem,6vw,3rem)}
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:8px 10px;border-bottom:2px solid var(--line);white-space:nowrap}
+td{padding:14px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+td.r,th.r{text-align:right}
+.sub{display:block;font-size:.8rem;color:var(--muted)}
+.tag{display:inline-block;font-size:.72rem;font-weight:700;letter-spacing:.05em;padding:2px 8px;border-radius:999px;margin-right:8px}
+.in{color:var(--in)}.out{color:var(--out)}
+.tag.in{background:var(--in-soft)}.tag.out{background:var(--out-soft)}
+.empty{padding:26px 6px;color:var(--muted);text-align:center}
+.pill{display:inline-block;background:var(--in-soft);color:var(--in);font-weight:700;padding:6px 14px;border-radius:999px;font-size:.95rem}
+
+/* pay / bills */
+.bills{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr));gap:14px}
+.bill{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;background:var(--surface);border:2px solid var(--line);border-radius:18px;padding:18px 20px;min-height:128px;min-width:0}
+.bill .n{font-family:var(--font-display);font-weight:800;font-size:1.35rem}
+.bill .a{font-size:1.7rem;font-weight:700}
+.bill .l{font-size:.85rem;color:var(--muted);margin-top:auto}
+.bill[disabled]{opacity:.55;cursor:not-allowed}
+.groc{grid-column:1/-1;cursor:default}
+.groc .row{display:flex;gap:12px;flex-wrap:wrap;align-items:stretch;width:100%;margin-top:6px}
+.groc .field{display:flex;align-items:center;gap:8px;border:2px solid var(--ink);border-radius:14px;padding:0 16px;background:var(--bg);flex:1 1 200px;min-height:64px}
+.groc input{font:inherit;font-size:1.6rem;font-weight:700;border:0;background:none;color:var(--ink);width:100%;outline:none;min-width:0}
+.groc .field:focus-within{outline:4px solid var(--focus);outline-offset:3px}
+.err{color:var(--out);font-weight:700}
+.math{display:grid;grid-template-columns:1fr auto;gap:8px 20px;font-size:1.3rem;max-width:520px;margin:6px auto 0;text-align:left}
+.math .tot{border-top:2px solid var(--ink);padding-top:10px;font-weight:700}
+.btnrow{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+
+/* idle */
+#idle{position:fixed;left:0;right:0;bottom:0;padding:14px max(16px,env(safe-area-inset-right,0px)) calc(14px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));background:var(--gold);color:var(--on-gold);font-weight:700;text-align:center;z-index:20}
+/* teacher */
+.btn.small{min-height:48px;padding:6px 16px;font-size:.9rem;border-radius:12px}
+.form{display:grid;gap:18px}
+.fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:16px}
+.fld{display:flex;flex-direction:column;gap:6px;min-width:0}
+.fld>span,.fld>label{font-weight:700}
+select,input[type=text],input[type=datetime-local]{font:inherit;font-size:1.1rem;min-height:56px;border:2px solid var(--ink);border-radius:12px;padding:0 14px;background:var(--bg);color:var(--ink);max-width:100%;min-width:0}
+.money{display:flex;align-items:center;gap:8px;border:2px solid var(--ink);border-radius:12px;padding:0 14px;background:var(--bg);min-height:56px}
+.money input{border:0;padding:0;min-height:52px;width:100%;background:none;outline:none;font-size:1.3rem;font-weight:700}
+.money:focus-within{outline:4px solid var(--focus);outline-offset:3px}
+.crow{display:flex;gap:14px;flex-wrap:wrap;align-items:center;padding:12px 14px;border:2px solid var(--line);border-radius:14px}
+.chk{display:flex;gap:12px;align-items:center;font-weight:700;flex:1 1 180px;min-width:0}
+.chk input{width:28px;height:28px;accent-color:var(--blue);flex:none}
+.when{flex:1 1 280px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;min-width:0}
+.keypad{display:grid;grid-template-columns:repeat(3,92px);gap:12px;justify-content:center}
+.key{height:80px;border-radius:18px;border:2px solid var(--line);background:var(--surface);font:inherit;font-weight:800;font-size:1.8rem;box-shadow:var(--shadow)}
+.pdots{display:flex;gap:16px;justify-content:center}
+.pdots i{width:24px;height:24px;border-radius:50%;border:3px solid var(--blue)}
+.pdots i.on{background:var(--blue)}
+.ok{color:var(--in);font-weight:700}
+.tag.sch{background:var(--line);color:var(--ink)}
+.tag.act{background:var(--in-soft);color:var(--in)}
+/* late bills */
+.bill.late{border-color:var(--out);background:var(--out-soft)}
+.latetag{display:inline-flex;align-items:center;gap:6px;margin-left:12px;color:var(--out);font-weight:800;font-size:.9rem;letter-spacing:.04em;vertical-align:middle}
+.latetag svg{width:24px;height:24px;flex:none}
+.lbadge{display:inline-flex;align-items:center;gap:6px;background:#fff;color:#B42318;border-radius:999px;padding:4px 12px;font-family:var(--font-body);font-size:.85rem;font-weight:700}
+.lbadge svg{width:20px;height:20px}
+.bigwarn svg{width:120px;height:120px;color:var(--out)}
+/* transfer */
+.xfer{min-height:72px;border-radius:18px;border:3px solid var(--blue);background:var(--surface);color:var(--ink);font-family:var(--font-display);font-weight:800;font-size:1.4rem;display:flex;align-items:center;justify-content:center;gap:12px;box-shadow:var(--shadow)}
+.xfer svg{width:32px;height:32px}
+/* no class days calendar */
+.cal{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:16px}
+.mon h3{margin-bottom:10px}
+.mgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.mgrid .wh{text-align:center;font-size:.8rem;color:var(--muted);padding:2px 0}
+.nd{position:relative;min-height:46px;border-radius:10px;border:2px solid var(--line);background:var(--surface);font-weight:700;font-size:1rem;padding:0;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1}
+.nd i{font-style:normal;font-size:.7rem;font-weight:800}
+.nd.on{background:var(--out-soft);border:3px solid var(--out);color:var(--out)}
+.nd.on i{font-size:1rem}
+.nd.lock{background:var(--bg);border:2px dashed var(--out);color:var(--out);cursor:not-allowed}
+.nd.off{opacity:.35;cursor:not-allowed}
+</style>
+</head>
+<body>
+<div id="app" class="wrap"></div>
+<div id="idle" hidden></div>
+<script>
+/* On-device database. Gives the bank the same calls it used with Claude's online database,
+   but everything is kept in this browser's own storage (IndexedDB). Nothing is sent anywhere. */
+var LocalDB=(function(){
+  var COLS=["students","tx","jobs","billAssignments","settings"];
+  var KEY="bank-of-career-ed", state={cols:{},meta:{}}, mode="memory", idb=null, chain=Promise.resolve();
+  function blank(){COLS.forEach(function(c){if(!state.cols[c])state.cols[c]={};});}
+  function clone(x){return x===undefined?x:JSON.parse(JSON.stringify(x));}
+  function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,10);}
+  function isObj(x){return x!==null&&typeof x==="object"&&!Array.isArray(x);}
+  function openIDB(){return new Promise(function(res,rej){
+    if(!window.indexedDB)return rej(new Error("no indexedDB"));
+    var r=indexedDB.open(KEY,1);
+    r.onupgradeneeded=function(){r.result.createObjectStore("kv");};
+    r.onsuccess=function(){res(r.result);};
+    r.onerror=function(){rej(r.error||new Error("idb error"));};
+    r.onblocked=function(){rej(new Error("idb blocked"));};
+  });}
+  function idbRead(){return new Promise(function(res,rej){
+    var q=idb.transaction("kv","readonly").objectStore("kv").get("state");
+    q.onsuccess=function(){res(q.result);};q.onerror=function(){rej(q.error);};});}
+  function idbWrite(str){return new Promise(function(res,rej){
+    var t=idb.transaction("kv","readwrite");t.objectStore("kv").put(str,"state");
+    t.oncomplete=function(){res();};t.onerror=function(){rej(t.error||new Error("write failed"));};t.onabort=function(){rej(t.error||new Error("write aborted"));};});}
+  function load(str){var o=JSON.parse(str);if(isObj(o)&&isObj(o.cols)){state.cols=o.cols;state.meta=isObj(o.meta)?o.meta:{};}blank();}
+  function write(){
+    var str=JSON.stringify(state);
+    if(mode==="indexeddb")return idbWrite(str);
+    if(mode==="localstorage"){localStorage.setItem(KEY,str);return Promise.resolve();}
+    return Promise.resolve();
+  }
+  function persist(){var p=chain.then(write);chain=p.catch(function(){});return p;}
+  function docRef(path){
+    var i=path.indexOf("/"), c=path.slice(0,i), id=path.slice(i+1);
+    return {
+      get:function(){var d=state.cols[c]&&state.cols[c][id];return Promise.resolve({exists:d!==undefined,data:function(){return clone(d);}});},
+      set:function(d){state.cols[c][id]=clone(d);return persist();},
+      update:function(p){if(state.cols[c][id]===undefined)return Promise.reject(new Error("not found"));Object.assign(state.cols[c][id],clone(p));return persist();},
+      "delete":function(){delete state.cols[c][id];return persist();}
+    };
+  }
+  function colRef(c,filters){
+    return {
+      where:function(f,op,v){if(op!=="==")throw new Error("unsupported");return colRef(c,(filters||[]).concat([[f,v]]));},
+      get:function(){
+        var out=[];
+        Object.keys(state.cols[c]).forEach(function(id){
+          var d=state.cols[c][id];
+          if((filters||[]).every(function(x){return d[x[0]]===x[1];}))out.push({id:id,data:function(){return clone(d);}});
+        });
+        return Promise.resolve({docs:out});
+      },
+      add:function(d){var id=uid();state.cols[c][id]=clone(d);return persist().then(function(){return {id:id};});}
+    };
+  }
+  var api={
+    doc:docRef, collection:function(c){return colRef(c);},
+    getMeta:function(k){return state.meta[k];},
+    setMeta:function(k,v){state.meta[k]=v;return persist();},
+    counts:function(){return {students:Object.keys(state.cols.students).length,tx:Object.keys(state.cols.tx).length};},
+    hasData:function(){return Object.keys(state.cols.students).length>0;},
+    snapshot:function(){
+      return {format:"bank-of-career-ed-backup",version:1,madeAt:Date.now(),
+        counts:{students:Object.keys(state.cols.students).length,tx:Object.keys(state.cols.tx).length},data:clone(state.cols)};
+    },
+    checkBackup:function(o){
+      if(!isObj(o)||o.format!=="bank-of-career-ed-backup"||!isObj(o.data))return "That is not a Bank of Career Ed backup file.";
+      if(typeof o.version!=="number"||o.version>1)return "This backup was made by a newer version of the bank. Update the bank first, then try again.";
+      for(var i=0;i<COLS.length;i++){
+        var c=o.data[COLS[i]];
+        if(c===undefined)continue;
+        if(!isObj(c))return "This backup file is damaged.";
+        var ks=Object.keys(c);
+        for(var j=0;j<ks.length;j++)if(!isObj(c[ks[j]]))return "This backup file is damaged.";
+      }
+      if(!isObj(o.data.students)||!isObj(o.data.tx))return "This backup file is damaged.";
+      return "";
+    },
+    restoreFrom:function(snap){
+      var prevCols=state.cols, prevMeta=state.meta;
+      var cols={};COLS.forEach(function(c){cols[c]=clone(snap.data[c])||{};});
+      state.cols=cols;state.meta=Object.assign({},prevMeta,{lastBackup:snap.madeAt||Date.now()});
+      return persist().catch(function(e){state.cols=prevCols;state.meta=prevMeta;throw e;});
+    }
+  };
+  return {
+    open:async function(){
+      blank();
+      try{
+        idb=await openIDB();mode="indexeddb";
+        var raw=await idbRead();if(raw)load(raw);
+      }catch(e){
+        idb=null;
+        try{
+          var raw2=localStorage.getItem(KEY);localStorage.setItem(KEY+".probe","1");localStorage.removeItem(KEY+".probe");
+          mode="localstorage";if(raw2)load(raw2);
+        }catch(e2){mode="memory";}
+      }
+      try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();}catch(e3){}
+      api.mode=mode;
+      return api;
+    }
+  };
+})();
+</script>
+<script>
+(function(){
+"use strict";
+var DAY=86400000, WEEK=7*DAY, RATE=0.03, FEE_MIN=10000, FEE_AMT=1500, START_CENTS=10000;
+var BILLS=[["rent","Rent"],["electricity","Electricity"],["gas","Gas"],["transportation","Transportation"],["insurance","Insurance"],["internet","Internet"]];
+var LOGO_SRC="logo.png";
+var IDLE_MS=60000, WARN_MS=45000;
+
+/* ---------- helpers ---------- */
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+function money(c){var n=Math.abs(c)/100;return (c<0?"-":"")+"$"+n.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});}
+function dShort(t){return new Date(t).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});}
+function dTime(t){return new Date(t).toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"});}
+function dDay(t){return new Date(t).toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric"});}
+function dLong(t){return new Date(t).toLocaleString("en-US",{weekday:"long",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"});}
+function parseMoney(s){s=String(s||"").replace(/[$,\s]/g,"");if(!/^\d+(\.\d{1,2})?$/.test(s))return null;return Math.round(parseFloat(s)*100);}
+function keyOf(code){return code.replace(/[^A-Za-z0-9_\-.~:@+]/g,"_");}
+function sleep(ms){return new Promise(function(r){setTimeout(r,ms);});}
+function bal(txs,acct,upTo){var t=0;for(var i=0;i<txs.length;i++){var x=txs[i];if(x.acct===acct&&x.ts<=(upTo==null?Infinity:upTo))t+=x.amt;}return t;}
+
+/* ---------- storage: shared db when available, in-memory practice data otherwise ---------- */
+var db=null, mem=null, storeNote="";
+function seedMem(){
+  var now=Date.now();
+  mem={students:{DEMO:{name:"Practice Student",job:"Practice job",weeklyCents:4000,classId:"c1",interestAnchor:now-15*DAY}},
+       tx:[{sid:"DEMO",acct:"checking",amt:10000,kind:"deposit",label:"Starting deposit",ts:now-15*DAY},
+           {sid:"DEMO",acct:"savings",amt:5000,kind:"deposit",label:"Starting deposit",ts:now-15*DAY}],
+       settings:{},assign:[],jobs:[]};
+}
+var store={
+  getStudent:async function(k){
+    if(db){var s=await db.doc("students/"+k).get();return s.exists?Object.assign({},s.data()):null;}
+    return mem.students[k]||null;},
+  getTx:async function(k){
+    if(db){var q=await db.collection("tx").where("sid","==",k).get();return q.docs.map(function(d){return Object.assign({},d.data());});}
+    return mem.tx.filter(function(t){return t.sid===k;});},
+  addTx:async function(t){
+    if(db){await db.collection("tx").add(t);}else{mem.tx.push(t);}},
+  updateStudent:async function(k,p){
+    if(db){await db.doc("students/"+k).update(p);}else{Object.assign(mem.students[k],p);}},
+  getSetting:async function(n){
+    if(db){var s=await db.doc("settings/"+n).get();return s.exists?JSON.parse(JSON.stringify(s.data())):{};}
+    return JSON.parse(JSON.stringify(mem.settings[n]||{}));},
+  setSetting:async function(n,d){
+    if(db){await db.doc("settings/"+n).set(d);}else{mem.settings[n]=d;}},
+  getAssignments:async function(cid){
+    if(db){var q=await db.collection("billAssignments").where("classId","==",cid).get();return q.docs.map(function(d){return Object.assign({id:d.id},d.data());});}
+    return mem.assign.filter(function(a){return a.classId===cid;});},
+  getAllAssignments:async function(){
+    if(db){var q=await db.collection("billAssignments").get();return q.docs.map(function(d){return Object.assign({id:d.id},d.data());});}
+    return mem.assign.slice();},
+  addAssignment:async function(a){
+    if(db){await db.collection("billAssignments").add(a);}else{a.id="m"+Math.random().toString(36).slice(2);mem.assign.push(a);}},
+  deleteAssignment:async function(id){
+    if(db){await db.doc("billAssignments/"+id).delete();}else{mem.assign=mem.assign.filter(function(a){return a.id!==id;});}},
+  getAllStudents:async function(){
+    if(db){var q=await db.collection("students").get();return q.docs.map(function(d){return Object.assign({key:d.id},d.data());});}
+    return Object.keys(mem.students).map(function(k){return Object.assign({key:k},mem.students[k]);});},
+  findByIdCode:async function(c){
+    if(db){var q=await db.collection("students").where("idCode","==",c).get();var d=q.docs[0];return d?{key:d.id,s:Object.assign({},d.data())}:null;}
+    var ks=Object.keys(mem.students).filter(function(k){return mem.students[k].idCode===c;});
+    return ks.length?{key:ks[0],s:mem.students[ks[0]]}:null;},
+  addStudent:async function(k,d){
+    if(db){await db.doc("students/"+k).set(d);}else{mem.students[k]=d;}},
+  getJobs:async function(sid){
+    if(db){var q=await db.collection("jobs").where("sid","==",sid).get();return q.docs.map(function(d){return Object.assign({id:d.id},d.data());});}
+    return mem.jobs.filter(function(j){return j.sid===sid;});},
+  getAllJobs:async function(){
+    if(db){var q=await db.collection("jobs").get();return q.docs.map(function(d){return Object.assign({id:d.id},d.data());});}
+    return mem.jobs.slice();},
+  addJob:async function(j){
+    if(db){await db.collection("jobs").add(j);}else{j.id="j"+Math.random().toString(36).slice(2);mem.jobs.push(j);}},
+  deleteJob:async function(id){
+    if(db){await db.doc("jobs/"+id).delete();}else{mem.jobs=mem.jobs.filter(function(j){return j.id!==id;});}},
+  deleteStudentTx:async function(k){
+    if(db){var q=await db.collection("tx").where("sid","==",k).get();
+      await Promise.all(q.docs.map(function(d){return db.doc("tx/"+d.id).delete();}));}
+    else{mem.tx=mem.tx.filter(function(t){return t.sid!==k;});}},
+  deleteStudent:async function(k){
+    if(db){await db.doc("students/"+k).delete();}else{delete mem.students[k];}}
+};
+
+/* ---------- state ---------- */
+var S={view:"start",student:null,key:null,tx:[],assign:[],teacher:false,pin:null,tform:null,alist:[],rmId:null,saved:false,classes:defaultClasses(),cmsg:"",cerr:"",fees:{},lateFees:{},tr:{from:"",to:"",amt:"",err:""},jobs:[],slist:[],jlist:[],jform:null,sform:null,smsg:"",serr:"",rmJ:null,bform:null,lmsg:"",lerr:"",bounce:0,feeNext:0,feeMin:FEE_MIN,feeAmt:FEE_AMT,fmsg:"",ferr:"",code:"",bill:null,result:null,gErr:"",gVal:"",payErr:""};
+var busy=false, lastActive=Date.now();
+var app=document.getElementById("app"), idleEl=document.getElementById("idle");
+
+/* ---------- pieces of UI ---------- */
+function logo(){
+  if(LOGO_SRC)return '<div class="logo"><img alt="Bank of Career Ed" src="'+LOGO_SRC+'"></div>';
+  return '<div class="logo"><svg viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" rx="12" fill="var(--blue)"/><path d="M24 9 9 17v3h30v-3L24 9Zm-11 14v10h4V23h-4Zm9 0v10h4V23h-4Zm9 0v10h4V23h-4ZM10 36v3h28v-3H10Z" fill="#fff"/></svg><span>Bank Center</span></div>';
+}
+var ICON={
+  star:'<svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m20 5 4.500 9.500 10.500 1.300-7.700 7.200 2 10.300L20 28l-9.300 5.300 2-10.300L5 15.800l10.500-1.300L20 5Z"/></svg>',
+  swap:'<svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 14h26M26 7l7 7-7 7M34 27H8M14 20l-7 7 7 7"/></svg>',
+  board:'<svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="7" width="30" height="20" rx="3"/><path d="M13 33h14M20 27v6"/></svg>',
+  warn:'<svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="20" cy="20" r="16"/><path d="M20 11v11"/><circle cx="20" cy="28.5" r="1.8" fill="currentColor"/></svg>',
+  clock:'<svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="20" cy="20" r="16"/><path d="M20 10v10l7 4"/></svg>',
+  chev:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>',
+  back:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg>',
+  coin:'<svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="20" cy="20" r="16"/><path d="M20 10v20M25 14.5c-1-1.6-3-2.5-5-2.5-3 0-5 1.500-5 3.500s2 3 5 3.500 5 1.500 5 3.500-2 3.500-5 3.500c-2 0-4-1-5-2.500"/></svg>',
+  bill:'<svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4h22v32l-4-3-3.500 3L20 33l-3.500 3L13 33l-4 3V4Z"/><path d="M15 13h10M15 20h10M15 27h6"/></svg>'
+};
+function topbar(){
+  return '<div class="bar">'+logo()+'<div class="who"><b>'+esc(S.student.name)+'</b><button class="btn line" data-act="done">Done</button></div></div>';
+}
+function back(to,label){return '<button class="btn line" data-act="'+to+'">'+ICON.back+(label||"Back")+'</button>';}
+
+/* ---------- views ---------- */
+function vStart(){
+  return '<main class="start">'+logo()+'<h1 class="tap">Please TAP your card.</h1>'+
+  '<div class="cue"><svg viewBox="0 0 600 260" role="img" aria-label="Tap your card on the card reader">'+
+  '<g fill="none" stroke="var(--blue)" stroke-width="6"><circle class="ring" cx="300" cy="130" r="110"/><circle class="ring r2" cx="300" cy="130" r="110"/><circle class="ring r3" cx="300" cy="130" r="110"/></g>'+
+  '<rect x="240" y="70" width="120" height="120" rx="24" fill="var(--ink)"/><path d="M270 150c10-12 10-28 0-40M290 160c16-18 16-42 0-60M310 170c22-24 22-56 0-80" fill="none" stroke="var(--bg)" stroke-width="7" stroke-linecap="round"/>'+
+  '<g class="card-ico"><rect x="30" y="85" width="150" height="95" rx="14" fill="var(--blue)"/><rect x="30" y="110" width="150" height="18" fill="#fff" opacity=".85"/><rect x="48" y="146" width="50" height="10" rx="5" fill="#fff" opacity=".85"/></g></svg></div>'+
+  '<button class="btn line" data-act="icodego" style="min-height:64px;font-size:1.2rem">Input code instead</button>'+
+  '<div class="foot" style="width:100%"><span>'+esc(storeNote)+'</span><button data-act="teacher">Teacher</button></div></main>';
+}
+function vWelcome(){return '<main class="center"><h1 class="big">Welcome!</h1><div class="name">'+esc(S.student.name)+'</div><div class="dots" aria-hidden="true"><i></i><i></i><i></i></div></main>';}
+function vUnknown(){
+  return '<main class="center"><h1 class="tap">Card not found</h1><div class="note">We do not know this card yet. Ask your teacher for help.<br><span class="sub">Card code: <span class="code">'+esc(S.code)+'</span></span></div><button class="btn gold" data-act="done">OK</button></main>';
+}
+function vError(){return '<main class="center"><h1 class="tap">Oops!</h1><div class="note">Something went wrong. Tap OK and try your card again.</div><button class="btn gold" data-act="done">OK</button></main>';}
+
+function vHome(){
+  var c=bal(S.tx,"checking"), s=bal(S.tx,"savings");
+  return topbar()+'<h2 class="title">Quick Glance</h2>'+
+  '<div class="tiles">'+
+   '<button class="tile checking" data-act="checking"><span class="lbl">Checking</span><span class="amt num">'+money(c)+'</span><span class="hint">See my activity '+ICON.chev+'</span></button>'+
+   '<button class="tile savings" data-act="savings"><span class="lbl">Savings</span><span class="amt num">'+money(s)+'</span><span class="hint">See my activity '+ICON.chev+'</span></button>'+
+  '</div>'+
+  '<button class="xfer" data-act="transfer">'+ICON.swap+'Transfer Funds</button>'+
+  '<div class="actions"><button class="action" data-act="paid">'+ICON.coin+'Get Paid</button><button class="action" data-act="bills">'+ICON.bill+'Pay a Bill'+(anyLate()?'<span class="lbadge">'+ICON.warn+'Late bill</span>':'')+'</button></div>';
+}
+
+function rowsFor(acct){
+  var list=S.tx.filter(function(t){return t.acct===acct;}).sort(function(a,b){return a.ts-b.ts;});
+  var run=0;list.forEach(function(t){run+=t.amt;t._run=run;});
+  return list.reverse();
+}
+function vAccount(acct){
+  var name=acct==="checking"?"Checking":"Savings";
+  var list=rowsFor(acct), total=bal(S.tx,acct);
+  var rows=list.map(function(t){
+    var inn=t.amt>=0;
+    return '<tr><td>'+esc(dShort(t.ts))+'<span class="sub">'+esc(dTime(t.ts))+'</span></td>'+
+      '<td><span class="tag '+(inn?"in":"out")+'">'+(inn?"MONEY IN":"MONEY OUT")+'</span>'+esc(t.label)+'</td>'+
+      '<td class="r num '+(inn?"in":"out")+'"><b>'+(inn?"+":"-")+money(Math.abs(t.amt))+'</b></td>'+
+      '<td class="r num">'+money(t._run)+'</td></tr>';
+  }).join("");
+  var table=list.length?'<div class="scroll"><table><thead><tr><th>Date</th><th>What</th><th class="r">Amount</th><th class="r">Balance</th></tr></thead><tbody>'+rows+'</tbody></table></div>':'<div class="empty">No activity yet.</div>';
+  var html=topbar()+'<div class="bar">'+back("home","Back")+'</div>'+
+   '<div class="head"><h2 class="title">'+name+'</h2><div class="bal num">'+money(total)+'</div></div>';
+  if(acct==="checking"&&S.feeNext){
+    html+='<section class="panel"><b>Your Checking is under '+money(S.feeMin)+'.</b><div>If it is still under '+money(S.feeMin)+' on <b>'+esc(dShort(S.feeNext))+'</b>, there is a '+money(S.feeAmt)+' minimum balance fee. Get back to '+money(S.feeMin)+' or more to skip the fee.</div></section>';
+  }
+  if(acct==="savings"){
+    var ints=S.tx.filter(function(t){return t.kind==="interest";}).sort(function(a,b){return b.ts-a.ts;});
+    var showMoved=ints.some(function(t){return t.meta&&t.meta.moved;});
+    var irows=ints.map(function(t){
+      var m=t.meta||{};
+      return '<tr><td>'+esc(dShort(m.from))+' to '+esc(dShort(m.to))+'</td>'+
+        '<td class="num">'+money(m.start)+'<span class="sub">as of '+esc(dShort(m.from))+'</span></td>'+
+        '<td class="num in"><b>+'+money(t.amt)+'</b></td>'+
+        (showMoved?'<td class="num">'+(m.moved?(m.moved>0?"+":"-")+money(Math.abs(m.moved)):"-")+'</td>':'')+
+        '<td class="r num"><b>'+money(m.newBal)+'</b><span class="sub">as of '+esc(dShort(m.to))+'</span></td></tr>';
+    }).join("");
+    var next=S.student.interestAnchor?'<span class="pill">Next interest: '+esc(dShort(S.student.interestAnchor+WEEK))+'</span>':'';
+    html+='<section class="panel"><div class="head"><h3>Weekly interest: 3%</h3>'+next+'</div>'+
+      (ints.length?'<div class="scroll"><table><thead><tr><th>Week</th><th>Starting balance</th><th>3% interest</th>'+(showMoved?'<th>Other changes</th>':'')+'<th class="r">New balance</th></tr></thead><tbody>'+irows+'</tbody></table></div>':'<div class="empty">Your first interest will show here after one week.</div>')+
+      '</section>';
+  }
+  html+='<section class="panel"><h3 style="margin-bottom:8px">All activity</h3>'+table+'</section>';
+  return html;
+}
+
+/* ---------- class days and no class days ---------- */
+/* A class meets on the weekdays checked in Classes (default Mon to Fri). Days checked in No Class Days are skipped.
+   A bill or paycheck that lands on a day the class does not meet moves to the next day it does meet at 8:00 AM,
+   and every later week stays on a 7 day cycle from that new day. */
+function dkey(d){return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2);}
+function classDays(cid){var c=S.classes.filter(function(x){return x.id===cid;})[0];return c&&c.days&&c.days.length?c.days:[1,2,3,4,5];}
+function noClassOn(key,cid){var n=S.noClass||{};return !!((n.all&&n.all[key])||(n.cls&&n.cls[cid]&&n.cls[cid][key]));}
+function bumpDay(t,cid){
+  var d=new Date(t);d.setHours(8,0,0,0);var first=d.getTime();
+  if(!cid)return first;
+  var days=classDays(cid);
+  for(var i=0;i<400;i++){
+    if(days.indexOf(d.getDay())>-1&&!noClassOn(dkey(d),cid))return d.getTime();
+    d.setDate(d.getDate()+1);d.setHours(8,0,0,0);
+  }
+  return first;
+}
+function payAt(t,k,cid){
+  if(!cid){var d0=new Date(t);d0.setDate(d0.getDate()+7*k);d0.setHours(8,0,0,0);return d0.getTime();}
+  var cur=bumpDay(t,cid);
+  for(var i=0;i<k;i++){var d=new Date(cur);d.setDate(d.getDate()+7);cur=bumpDay(d.getTime(),cid);}
+  return cur;
+}
+/* each job pays every 7 days from its first paycheck date; a newer job replaces it from its own start date */
+function payPlan(){
+  var now=Date.now(), claimed={}, cid=S.student&&S.student.classId, list=S.jobs.slice().sort(function(a,b){return a.startAt-b.startAt;});
+  S.tx.forEach(function(t){if(t.kind==="pay"&&t.meta&&t.meta.aid)claimed[t.meta.aid+":"+t.meta.k]=1;});
+  var waiting=[], next=0, cur=null;
+  list.forEach(function(a,i){
+    var end=list[i+1]?payAt(list[i+1].startAt,0,cid):Infinity;
+    if(payAt(a.startAt,0,cid)<=now)cur=a;
+    for(var k=0;k<520;k++){
+      var at=payAt(a.startAt,k,cid);
+      if(at>=end)break;
+      if(at>now){if(!next||at<next)next=at;break;}
+      if(!claimed[a.id+":"+k])waiting.push({a:a,k:k,at:at});
+    }
+  });
+  return {cur:cur,waiting:waiting,next:next};
+}
+function lastPay(){var m=0;S.tx.forEach(function(t){if(t.kind==="pay"&&t.ts>m)m=t.ts;});return m;}
+function vPaid(){
+  var p=payPlan(), cur=p.cur, wk=cur?cur.payCents:0, lp=lastPay(), total=0, n=p.waiting.length, body;
+  p.waiting.forEach(function(w){total+=w.a.payCents;});
+  if(!cur&&!p.next)body='<div class="note">You do not have a job yet. Ask your teacher.</div>';
+  else if(!cur)body='<div class="note">Your job starts <b>'+esc(dDay(p.next))+'</b>.</div>';
+  else if(n)body='<button class="btn gold" data-act="getcheck" style="min-height:84px;font-size:1.5rem">Get my paycheck'+(n>1?'s ('+n+')':'')+': '+money(total)+'</button>';
+  else body='<div class="note"><b>You already got your paycheck this week.</b><br>'+(p.next?'Next paycheck: <b>'+esc(dDay(p.next))+'</b>':'No more paychecks are scheduled.')+'</div>';
+  return topbar()+'<div class="bar">'+back("home","Back")+'</div><h2 class="title">Get Paid</h2>'+
+   '<section class="panel" style="display:grid;gap:18px"><div><span class="sub">My job</span><div class="name">'+esc(cur?cur.job:"No job yet")+'</div></div>'+
+   '<div><span class="sub">Weekly paycheck</span><div class="bal num" style="font-family:var(--font-display);font-weight:800;font-size:2.6rem">'+money(wk)+'</div></div>'+
+   (lp?'<div class="sub">Last paycheck picked up: '+esc(dShort(lp))+'</div>':'')+
+   body+'</section>';
+}
+
+/* a weekly bill repeats every 7 days at 8:00 AM; each week becomes its own due bill (id "<assignment>:<week>") so it can be paid and go late on its own */
+function expandAssign(list){
+  var now=Date.now(), out=[];
+  list.forEach(function(a){
+    if(!a.recurring){var c=Object.assign({},a);c.startAt=bumpDay(a.startAt,a.classId);out.push(c);return;}
+    for(var k=0;k<520;k++){
+      var at=payAt(a.startAt,k,a.classId);
+      if(at>now)break;
+      out.push({id:a.id+":"+k,classId:a.classId,bill:a.bill,cents:a.cents,startAt:at,createdAt:a.createdAt});
+    }
+  });
+  return out;
+}
+function lastBill(id){var m=0;S.tx.forEach(function(t){if(t.kind==="bill"&&t.meta&&t.meta.bill===id&&t.ts>m)m=t.ts;});return m;}
+function dueFor(id){
+  var now=Date.now(), paid={};
+  S.tx.forEach(function(t){if(t.kind==="bill"&&t.meta&&t.meta.aid)paid[t.meta.aid]=1;});
+  return S.assign.filter(function(a){return a.bill===id&&a.startAt<=now&&!paid[a.id];}).sort(function(a,b){return a.startAt-b.startAt;});
+}
+/* a bill is late 7 days after it starts; one late fee is added for each full week it stays unpaid */
+function owed(a){
+  var k=Math.max(0,Math.floor((Date.now()-a.startAt)/WEEK)), fee=S.lateFees[a.bill]||0;
+  return {base:a.cents,weeks:k,late:k*fee,total:a.cents+k*fee};
+}
+function anyLate(){return BILLS.some(function(b){return dueFor(b[0]).some(function(a){return owed(a).weeks>0;});});}
+function vBills(){
+  var cards=BILLS.map(function(b){
+    var due=dueFor(b[0]), lb=lastBill(b[0]), o=due.length?owed(due[0]):null, late=!!o&&o.weeks>0, note;
+    if(o){
+      note='Due since '+esc(dShort(due[0].startAt))+(due.length>1?' | '+(due.length-1)+' more due':'');
+      if(late)note='Bill '+money(o.base)+' + late fees '+money(o.late)+'<br>'+note;
+    }else note=lb?'All paid. Last paid: '+esc(dShort(lb)):'Nothing due right now';
+    return '<button class="bill'+(late?' late':'')+'" data-act="bill" data-id="'+b[0]+'"'+(due.length?'':' disabled')+'><span class="n">'+b[1]+(late?'<span class="latetag">'+ICON.warn+ICON.clock+'LATE</span>':'')+'</span><span class="a num">'+money(o?o.total:0)+'</span><span class="l">'+note+'</span></button>';
+  }).join("");
+  var lg=lastBill("groceries");
+  cards+='<div class="bill groc"><span class="n">Groceries</span><span class="l" style="margin-top:0">Type the total of your grocery cart.'+(lg?' Last paid: '+esc(dShort(lg))+'.':'')+'</span>'+
+    '<div class="row"><label class="field" for="gval"><span style="font-size:1.6rem;font-weight:700">$</span><input id="gval" inputmode="decimal" autocomplete="off" placeholder="0.00" value="'+esc(S.gVal)+'"></label>'+
+    '<button class="btn gold" data-act="groc" style="min-width:200px">Review</button></div>'+
+    (S.gErr?'<div class="err">'+esc(S.gErr)+'</div>':'')+'</div>';
+  return topbar()+'<div class="bar">'+back("home","Back")+'</div><div class="head"><h2 class="title">Pay a Bill</h2><div><span class="sub">Checking</span><b class="num" style="font-size:1.6rem">'+money(bal(S.tx,"checking"))+'</b></div></div><div class="bills">'+cards+'</div>';
+}
+
+function vConfirm(){
+  var b=S.bill, late=b.late||0, total=b.cents+late, c=bal(S.tx,"checking"), after=c-total, ok=after>=0;
+  return topbar()+'<main class="center"><h2 class="title">Pay '+esc(b.name)+'?</h2>'+
+   '<div class="math num"><span>Checking now</span><b>'+money(c)+'</b><span>'+esc(b.name)+'</span><b class="out">-'+money(b.cents)+'</b>'+
+   (late?'<span>Late fees</span><b class="out">-'+money(late)+'</b>':'')+
+   '<span class="tot">Checking after</span><b class="tot '+(ok?'':'out')+'">'+money(after)+'</b></div>'+
+   (ok?'':'<div class="note err">Not enough money in Checking. You need '+money(-after)+' more.</div>')+
+   '<div class="btnrow"><button class="btn line" data-act="bills">Cancel</button><button class="btn gold" data-act="paybill">Pay '+money(total)+'</button></div></main>';
+}
+function vBounce(){
+  return topbar()+'<main class="center"><div class="bigwarn">'+ICON.warn+'</div><h1 class="tap" style="color:var(--out)">Payment bounced</h1>'+
+    '<div class="note">There is not enough money in Checking.<br>You need <b class="num">'+money(S.bounce)+'</b> more.</div>'+
+    '<div class="btnrow"><button class="btn gold" data-act="bills">Back to bills</button></div></main>';
+}
+function vResult(){
+  var r=S.result;
+  return topbar()+'<main class="center"><h1 class="big">'+esc(r.title)+'</h1><div class="note">'+r.html+'</div><div class="btnrow"><button class="btn gold" data-act="home">Back to Quick Glance</button></div></main>';
+}
+
+var VIEWS={tnoclass:vTNoClass,tbonus:vTBonus,tstudents:vTStudents,tjobs:vTJobs,transfer:vTransfer,trconfirm:vTrConfirm,bounce:vBounce,tlate:vTLate,tfees:vTFees,tpin:vPin,spin:vSpin,icode:vICode,tpins:vTPins,thome:vTHome,tassign:vTAssign,tclasses:vTClasses,tview:vTView,start:vStart,welcome:vWelcome,unknown:vUnknown,error:vError,home:vHome,checking:function(){return vAccount("checking");},savings:function(){return vAccount("savings");},paid:vPaid,bills:vBills,confirm:vConfirm,result:vResult};
+function go(v){S.view=v;app.innerHTML=VIEWS[v]();window.scrollTo(0,0);}
+
+/* ---------- data flow ---------- */
+async function processInterest(){
+  var s=S.student, anchor=s.interestAnchor; if(!anchor)return;
+  var now=Date.now(), changed=false, guard=0;
+  while(anchor+WEEK<=now&&guard++<104){
+    var from=anchor,to=anchor+WEEK;
+    var start=bal(S.tx,"savings",from), end=bal(S.tx,"savings",to);
+    var interest=Math.round(start*RATE);
+    if(interest>0){
+      var t={sid:S.key,acct:"savings",amt:interest,kind:"interest",label:"Weekly interest (3%)",ts:to,meta:{from:from,to:to,start:start,moved:end-start,newBal:end+interest}};
+      await store.addTx(t);S.tx.push(t);
+    }
+    anchor=to;changed=true;
+  }
+  if(changed){await store.updateStudent(S.key,{interestAnchor:anchor});s.interestAnchor=anchor;}
+}
+async function processFees(){
+  S.feeNext=0;
+  var cid=S.student.classId;if(!cid)return;
+  var fees=await store.getSetting("fees"), rule=fees[cid];
+  if(!rule||!rule.on)return;
+  var cfg=await store.getSetting("feeAmounts");
+  S.feeMin=cfg.minCents>0?cfg.minCents:FEE_MIN;S.feeAmt=cfg.feeCents>0?cfg.feeCents:FEE_AMT;
+  var since=rule.since||0, now=Date.now();
+  var list=S.tx.filter(function(t){return t.acct==="checking";}).sort(function(a,b){return a.ts-b.ts;});
+  var have={};S.tx.forEach(function(t){if(t.kind==="fee"&&t.meta&&t.meta.due)have[t.meta.due]=1;});
+  var b=0,active=null,spans=[];
+  list.forEach(function(t){
+    b+=t.amt;
+    if(b<S.feeMin&&active===null)active=t.ts;
+    else if(b>=S.feeMin&&active!==null){spans.push([active,t.ts]);active=null;}
+  });
+  if(active!==null)spans.push([active,Infinity]);
+  var dues=[];
+  spans.forEach(function(sp){
+    var st=Math.max(sp[0],since);
+    if(sp[1]<=st)return;
+    for(var k=1;k<200;k++){
+      var d=st+k*WEEK;
+      if(d>=sp[1])break;
+      if(d>now){if(sp[1]===Infinity)S.feeNext=d;break;}
+      dues.push(d);
+    }
+  });
+  for(var i=0;i<dues.length;i++){
+    if(have[dues[i]])continue;
+    var t={sid:S.key,acct:"checking",amt:-S.feeAmt,kind:"fee",label:"Minimum balance fee",ts:dues[i],meta:{due:dues[i]}};
+    await store.addTx(t);S.tx.push(t);
+  }
+}
+async function refresh(withInterest){
+  S.tx=await store.getTx(S.key);
+  S.classes=classesFrom(await store.getSetting("classes"));
+  S.noClass=await store.getSetting("noClass");
+  S.assign=expandAssign(S.student.classId?await store.getAssignments(S.student.classId):[]);
+  S.lateFees=await store.getSetting("lateFees");
+  S.jobs=await store.getJobs(S.key);
+  if(withInterest)await processInterest();
+  await processFees();
+}
+async function enterAccount(s,key){
+  S.student=s;S.key=key;S.gErr="";S.gVal="";go("welcome");
+  var t0=Date.now();
+  await refresh(true);
+  var w=1600-(Date.now()-t0);if(w>0)await sleep(w);
+  touch();go("home");
+}
+function startPin(s,key){
+  S.student=null;S.key=null;S.icode=null;
+  S.spin={s:s,key:key,buf:"",first:"",mode:s.pin?"enter":"create",msg:"",bad:0};
+  go("spin");touch();
+}
+function icodeKey(k){
+  var p=S.icode;if(!p||busy)return;
+  p.msg="";
+  if(k==="go"){
+    if(p.buf.length<6){p.msg="Your ID code has 6 to 12 numbers.";go("icode");return;}
+    return icodeDone();
+  }
+  if(k==="bk")p.buf=p.buf.slice(0,-1);else if(p.buf.length<12)p.buf+=k;
+  go("icode");
+}
+async function icodeDone(){
+  var p=S.icode;busy=true;
+  try{
+    var r=await store.findByIdCode(p.buf);
+    if(r){startPin(r.s,r.key);}
+    else{
+      p.bad++;p.buf="";
+      if(p.bad>=3){S.icode=null;logout();}
+      else{p.msg="That code is not right. Try again.";go("icode");}
+    }
+  }catch(e){S.icode=null;go("error");}
+  finally{busy=false;}
+}
+async function handleCard(raw,skipPin){
+  if(busy)return; busy=true;
+  S.teacher=false;S.pin=null;S.spin=null;S.icode=null;var code=String(raw).trim().toUpperCase(), key=keyOf(code);
+  try{
+    var s=await store.getStudent(key);
+    if(!s){S.student=null;S.code=code;go("unknown");touch();return;}
+    if(!skipPin){startPin(s,key);return;}
+    await enterAccount(s,key);
+  }catch(e){S.student=null;go("error");touch();}
+  finally{busy=false;}
+}
+function spinKey(k){
+  var p=S.spin;if(!p||busy)return;
+  p.msg="";
+  if(k==="bk")p.buf=p.buf.slice(0,-1);else if(p.buf.length<4)p.buf+=k;
+  go("spin");
+  if(p.buf.length===4)spinDone();
+}
+async function spinDone(){
+  var p=S.spin;busy=true;
+  try{
+    if(p.mode==="create"){p.first=p.buf;p.buf="";p.mode="confirm";go("spin");}
+    else if(p.mode==="confirm"){
+      if(p.buf===p.first){
+        await store.updateStudent(p.key,{pin:p.first});p.s.pin=p.first;S.spin=null;
+        await enterAccount(p.s,p.key);
+      }else{p.buf="";p.first="";p.mode="create";p.msg="The PINs did not match. Start again.";go("spin");}
+    }else{
+      if(p.buf===String(p.s.pin)){S.spin=null;await enterAccount(p.s,p.key);}
+      else{
+        p.bad++;p.buf="";
+        if(p.bad>=3){S.spin=null;logout();}
+        else{p.msg="That PIN is not right. Try again.";go("spin");}
+      }
+    }
+  }catch(e){S.spin=null;go("error");}
+  finally{busy=false;}
+}
+function logout(){S.teacher=false;S.pin=null;S.spin=null;S.icode=null;S.student=null;S.key=null;S.tx=[];S.bill=null;S.result=null;S.gErr="";S.gVal="";idleEl.hidden=true;go("start");}
+function touch(){lastActive=Date.now();}
+
+async function doGetCheck(){
+  if(busy)return;busy=true;
+  try{
+    await refresh(false);
+    var p=payPlan();
+    if(!p.waiting.length){go("paid");return;}
+    var now=Date.now(), total=0;
+    for(var i=0;i<p.waiting.length;i++){
+      var w=p.waiting[i];total+=w.a.payCents;
+      await store.addTx({sid:S.key,acct:"checking",amt:w.a.payCents,kind:"pay",label:"Paycheck: "+w.a.job,ts:now+i,meta:{aid:w.a.id,k:w.k}});
+    }
+    await refresh(false);
+    var p2=payPlan(), n=p.waiting.length;
+    S.result={title:"Paid!",html:'<b class="in num">+'+money(total)+'</b> added to Checking'+(n>1?' ('+n+' paychecks)':'')+'.<br>'+(p2.next?'Next paycheck: <b>'+esc(dDay(p2.next))+'</b>':'No more paychecks are scheduled.')};
+    go("result");
+  }catch(e){go("error");}
+  finally{busy=false;}
+}
+/* ---------- transfers between Checking and Savings ---------- */
+function acctName(a){return a==="checking"?"Checking":"Savings";}
+function vTransfer(){
+  var t=S.tr, bals={checking:bal(S.tx,"checking"),savings:bal(S.tx,"savings")};
+  function opt(id,sel){return '<option value="'+id+'"'+(sel===id?' selected':'')+'>'+acctName(id)+' ('+money(bals[id])+')</option>';}
+  return topbar()+'<div class="bar">'+back("home","Back")+'</div><h2 class="title">Transfer Funds</h2>'+
+   '<section class="panel form"><div class="fgrid">'+
+   '<div class="fld"><label for="tfrom">Transfer from</label><select id="tfrom"><option value=""'+(!t.from?' selected':'')+'>Choose an account</option>'+opt("checking",t.from)+opt("savings",t.from)+'</select></div>'+
+   '<div class="fld"><label for="tto">Transfer to</label><select id="tto"><option value=""'+(!t.to?' selected':'')+'>Choose an account</option>'+opt("checking",t.to)+opt("savings",t.to)+'</select></div>'+
+   '<div class="fld"><label for="tamt">Amount</label><div class="money"><b>$</b><input id="tamt" type="text" inputmode="decimal" autocomplete="off" placeholder="0.00" value="'+esc(t.amt)+'"></div></div></div>'+
+   (t.err?'<div class="err">'+esc(t.err)+'</div>':'')+
+   '<div><button class="btn gold" data-act="trreview" style="min-width:220px;min-height:72px;font-size:1.3rem">Review</button></div></section>';
+}
+function vTrConfirm(){
+  var t=S.tr, c=parseMoney(t.amt), f=bal(S.tx,t.from), g=bal(S.tx,t.to);
+  return topbar()+'<main class="center"><h2 class="title">Move '+money(c)+' to '+acctName(t.to)+'?</h2>'+
+   '<div class="math num"><span>'+acctName(t.from)+' now</span><b>'+money(f)+'</b><span>'+acctName(t.from)+' after</span><b class="out">'+money(f-c)+'</b>'+
+   '<span>'+acctName(t.to)+' now</span><b>'+money(g)+'</b><span class="tot">'+acctName(t.to)+' after</span><b class="tot in">'+money(g+c)+'</b></div>'+
+   '<div class="btnrow"><button class="btn line" data-act="transfer">Cancel</button><button class="btn gold" data-act="trdo">Transfer '+money(c)+'</button></div></main>';
+}
+async function doTransfer(){
+  if(busy)return;busy=true;
+  try{
+    await refresh(false);
+    var t=S.tr, c=parseMoney(t.amt);
+    if(c===null||c<=0||t.from===t.to){t.err="Check the transfer and try again.";go("transfer");return;}
+    if(bal(S.tx,t.from)<c){t.err="Not enough money in "+acctName(t.from)+". You have "+money(bal(S.tx,t.from))+".";go("transfer");return;}
+    var now=Date.now();
+    await store.addTx({sid:S.key,acct:t.from,amt:-c,kind:"transfer",label:"Transfer to "+acctName(t.to),ts:now});
+    await store.addTx({sid:S.key,acct:t.to,amt:c,kind:"transfer",label:"Transfer from "+acctName(t.from),ts:now+1});
+    if(t.to==="savings"&&!S.student.interestAnchor){await store.updateStudent(S.key,{interestAnchor:now});S.student.interestAnchor=now;}
+    await refresh(false);
+    S.result={title:"Done!",html:'Moved <b class="num">'+money(c)+'</b> from '+acctName(t.from)+' to '+acctName(t.to)+'.<br>Checking: <b class="num">'+money(bal(S.tx,"checking"))+'</b> &nbsp; Savings: <b class="num">'+money(bal(S.tx,"savings"))+'</b>'};
+    S.tr={from:"",to:"",amt:"",err:""};
+    go("result");
+  }catch(e){go("error");}
+  finally{busy=false;}
+}
+async function doPayBill(){
+  if(busy||!S.bill)return;busy=true;
+  try{
+    await refresh(false);
+    var b=S.bill, late=0, weeks=0;
+    if(b.aid){
+      var a=dueFor(b.id).filter(function(x){return x.id===b.aid;})[0];
+      if(!a){S.bill=null;go("bills");return;}
+      var o=owed(a);
+      if(o.total!==b.cents+(b.late||0)){b.cents=o.base;b.late=o.late;b.weeks=o.weeks;go("confirm");return;}
+      late=o.late;weeks=o.weeks;
+    }
+    var total=b.cents+late, have=bal(S.tx,"checking");
+    if(have<total){S.bounce=total-have;go("bounce");return;}
+    var now=Date.now();
+    await store.addTx({sid:S.key,acct:"checking",amt:-b.cents,kind:"bill",label:b.name,ts:now,meta:b.aid?{bill:b.id,aid:b.aid}:{bill:b.id}});
+    if(late>0)await store.addTx({sid:S.key,acct:"checking",amt:-late,kind:"latefee",label:"Late fee: "+b.name+(weeks>1?" ("+weeks+" weeks)":""),ts:now+1,meta:{bill:b.id,aid:b.aid}});
+    await refresh(false);
+    S.result={title:"Paid!",html:esc(b.name)+': <b class="out num">-'+money(total)+'</b>'+(late>0?'<br><span class="sub">Bill '+money(b.cents)+' + late fees '+money(late)+'</span>':'')+'<br>Checking now: <b class="num">'+money(bal(S.tx,"checking"))+'</b>'};
+    S.bill=null;go("result");
+  }catch(e){go("error");}
+  finally{busy=false;}
+}
+
+/* ---------- teacher ---------- */
+function defaultClasses(){return [1,2,3,4,5].map(function(n){return {id:"c"+n,name:"MS"+n};});}
+function classIds(){return S.classes.map(function(c){return c.id;});}
+function className(id){var c=S.classes.filter(function(x){return x.id===id;})[0];return c?c.name:id;}
+function classesFrom(c){
+  if(c.list&&c.list.length)return c.list.map(function(x){var o={id:x.id,name:x.name};if(x.days&&x.days.length)o.days=x.days.slice();return o;});
+  if(c.names)return defaultClasses().map(function(d,i){return {id:d.id,name:c.names[i]||d.name};});
+  return defaultClasses();
+}
+function newForm(){var c={};classIds().forEach(function(id){c[id]={on:false,when:""};});return {type:"rent",amt:"",weeks:"1",cls:c,msg:"",err:""};}
+async function sha(p){
+  try{var b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode("bank-center:"+p));
+    return Array.prototype.map.call(new Uint8Array(b),function(x){return ("0"+x.toString(16)).slice(-2);}).join("");}
+  catch(e){return "plain:"+p;}
+}
+async function openPin(){
+  var t=await store.getSetting("teacher");
+  S.student=null;S.teacher=false;
+  S.pin={buf:"",msg:"",first:"",mode:t.pinHash?"enter":"create"};
+  go("tpin");touch();
+}
+async function enterTeacher(){
+  S.classes=classesFrom(await store.getSetting("classes"));
+  try{S.noClass=await store.getSetting("noClass");}catch(e){S.noClass={};}
+  S.ncYear=ncDefaultYear();S.ncScope="all";S.ncerr="";
+  try{S.slist=await store.getAllStudents();}catch(e){S.slist=[];}
+  S.teacher=true;S.pin=null;S.tform=newForm();S.sform={name:"",num:"",cls:S.classes[0]?S.classes[0].id:"",code:"",idc:""};S.jform={sid:"",job:"",pay:"",when:"",msg:"",err:""};S.bform=newBForm();touch();go("thome");
+}
+function pinKey(k){
+  var p=S.pin;if(!p||busy)return;
+  p.msg="";
+  if(k==="bk")p.buf=p.buf.slice(0,-1);else if(p.buf.length<6)p.buf+=k;
+  go("tpin");
+  if(p.buf.length===6)pinDone();
+}
+async function pinDone(){
+  var p=S.pin;busy=true;
+  try{
+    if(p.mode==="create"){p.first=p.buf;p.buf="";p.mode="confirm";go("tpin");}
+    else if(p.mode==="confirm"){
+      if(p.buf===p.first){await store.setSetting("teacher",{pinHash:await sha(p.buf)});await enterTeacher();}
+      else{p.buf="";p.first="";p.mode="create";p.msg="Those did not match. Start again.";go("tpin");}
+    }else{
+      var t=await store.getSetting("teacher");
+      if(t.pinHash===await sha(p.buf)){await enterTeacher();}
+      else{p.buf="";p.msg="That PIN is not right. Try again.";go("tpin");}
+    }
+  }catch(e){go("error");}
+  finally{busy=false;}
+}
+function ttop(){return '<div class="bar">'+logo()+'<div class="who"><b>Teacher</b><button class="btn line" data-act="lock">Lock</button></div></div>';}
+function vPin(){
+  var p=S.pin||{buf:"",msg:"",mode:"enter"};
+  var title=p.mode==="create"?"Choose a 6-digit teacher PIN":p.mode==="confirm"?"Type the PIN again":"Teacher PIN";
+  var dots='<div class="pdots">'+[0,1,2,3,4,5].map(function(i){return '<i class="'+(i<p.buf.length?'on':'')+'"></i>';}).join("")+'</div>';
+  var keys=["1","2","3","4","5","6","7","8","9"].map(function(k){return '<button class="key" data-act="pk" data-k="'+k+'">'+k+'</button>';}).join("")+
+    '<button class="key" data-act="pk" data-k="bk" style="font-size:1.1rem">Delete</button><button class="key" data-act="pk" data-k="0">0</button><span></span>';
+  return '<main class="center">'+logo()+'<h2 class="title">'+title+'</h2>'+dots+'<div class="err" style="min-height:1.5em">'+esc(p.msg)+'</div><div class="keypad">'+keys+'</div><button class="btn line" data-act="done">Cancel</button></main>';
+}
+function vSpin(){
+  var p=S.spin||{buf:"",msg:"",mode:"enter",s:{name:""}};
+  var title=p.mode==="create"?"Make your 4-digit PIN":p.mode==="confirm"?"Type your PIN again":"Type your PIN";
+  var sub=p.mode==="create"?"Hi "+p.s.name+"! The PIN you type now will be your PIN. Remember it.":p.mode==="confirm"?"Type the same 4 numbers.":"Hi "+p.s.name+"!";
+  var dots='<div class="pdots">'+[0,1,2,3].map(function(i){return '<i class="'+(i<p.buf.length?'on':'')+'"></i>';}).join("")+'</div>';
+  var keys=["1","2","3","4","5","6","7","8","9"].map(function(k){return '<button class="key" data-act="spk" data-k="'+k+'">'+k+'</button>';}).join("")+
+    '<button class="key" data-act="spk" data-k="bk" style="font-size:1.1rem">Delete</button><button class="key" data-act="spk" data-k="0">0</button><span></span>';
+  return '<main class="center">'+logo()+'<h2 class="title">'+title+'</h2><div class="note">'+esc(sub)+'</div>'+dots+'<div class="err" style="min-height:1.5em">'+esc(p.msg)+'</div><div class="keypad">'+keys+'</div><button class="btn line" data-act="done">Cancel</button></main>';
+}
+function vICode(){
+  var p=S.icode||{buf:"",msg:""};
+  var nd=Math.max(6,p.buf.length), di=[];for(var q=0;q<nd;q++)di.push(q);
+  var dots='<div class="pdots" style="flex-wrap:wrap;gap:12px;max-width:560px">'+di.map(function(i){return '<i class="'+(i<p.buf.length?'on':'')+'"></i>';}).join("")+'</div>';
+  var keys=["1","2","3","4","5","6","7","8","9"].map(function(k){return '<button class="key" data-act="ick" data-k="'+k+'">'+k+'</button>';}).join("")+
+    '<button class="key" data-act="ick" data-k="bk" style="font-size:1.1rem">Delete</button><button class="key" data-act="ick" data-k="0">0</button><button class="key" data-act="ick" data-k="go" style="font-size:1.1rem;background:var(--gold);color:var(--on-gold);border-color:transparent">Enter</button>';
+  return '<main class="center">'+logo()+'<h2 class="title">Type your ID code</h2><div class="sub">6 to 12 numbers. Tap Enter when you are done.</div>'+dots+'<div class="err" style="min-height:1.5em">'+esc(p.msg)+'</div><div class="keypad">'+keys+'</div><button class="btn line" data-act="done">Back</button></main>';
+}
+function vTPins(){
+  var list=S.slist.slice().sort(byClassName);
+  var rows=list.map(function(st){
+    var has=!!st.pin, arm=S.rmPin===st.key;
+    return '<tr><td>'+esc(st.name)+'</td><td>'+esc(className(st.classId))+'</td><td>'+esc(st.num||"-")+'</td>'+
+      '<td class="num"><b>'+(has?(S.showPins?esc(st.pin):"&bull;&bull;&bull;&bull;"):"Not set yet")+'</b></td>'+
+      '<td class="r">'+(has?'<button class="btn small line" data-act="resetpin" data-key="'+esc(st.key)+'">'+(arm?'Tap again to reset':'Reset PIN')+'</button>':'')+'</td></tr>';
+  }).join("");
+  return ttop()+'<div class="bar">'+back("thome","Back")+'</div><h2 class="title">Student PINs</h2>'+
+   '<section class="panel"><div class="sub" style="margin-bottom:10px">A student\'s first PIN after tapping their card becomes their PIN. Reset a PIN if they forget it, and they will make a new one at their next tap.</div>'+
+   '<div style="margin-bottom:12px"><button class="btn gold" data-act="togglepins">'+(S.showPins?'Hide PINs':'Show PINs')+'</button></div>'+
+   (list.length?'<div class="scroll"><table><thead><tr><th>Name</th><th>Class</th><th>ID number</th><th>PIN</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div>':'<div class="empty">No students yet.</div>')+'</section>';
+}
+function vTHome(){
+  var people='<svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="14" cy="14" r="6"/><circle cx="29" cy="16" r="5"/><path d="M3 34c0-6 5-10 11-10s11 4 11 10M26 25c6 0 11 3 11 9"/></svg>';
+  return ttop()+'<h2 class="title">Teacher Center</h2>'+bkReminder()+'<div class="actions">'+
+    '<button class="action" data-act="tassign">'+ICON.bill+'Assign Bills</button>'+
+    '<button class="action" data-act="tjobs">'+ICON.coin+'Jobs &amp; Pay</button>'+
+    '<button class="action" data-act="tbonus">'+ICON.star+'Bonuses</button>'+
+    '<button class="action" data-act="tstudents">'+people+'Students</button>'+
+    '<button class="action" data-act="tpins"><svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="18" width="24" height="17" rx="3"/><path d="M13 18v-5a7 7 0 0 1 14 0v5"/></svg>Student PINs</button>'+
+    '<button class="action" data-act="tclasses">'+ICON.board+'Classes</button>'+
+    '<button class="action" data-act="tnoclass"><svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="8" width="30" height="27" rx="4"/><path d="M5 16h30M13 4v7M27 4v7M15 23l10 8M25 23l-10 8"/></svg>No Class Days</button>'+
+    '<button class="action" data-act="tfees">'+ICON.clock+'Minimum Balance Fee</button>'+
+    '<button class="action" data-act="tlate">'+ICON.warn+'Late Fees</button>'+
+    '<button class="action" data-act="tbackup"><svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6v18M12 17l8 8 8-8M6 30v3a2 2 0 0 0 2 2h24a2 2 0 0 0 2-2v-3"/></svg>Backup &amp; Restore</button>'+
+    '<button class="action" data-act="practice">'+ICON.coin+'View as a Student</button></div>';
+}
+function effStart(a){return bumpDay(a.startAt,a.classId);}
+function arow(a){
+  var now=Date.now(), at=effStart(a), up=at>now, nm=BILLS.filter(function(b){return b[0]===a.bill;})[0];
+  var arm=S.rmId===a.id, moved=dkey(new Date(at))!==dkey(new Date(a.startAt));
+  return '<tr><td>'+esc(dShort(at))+'<span class="sub">'+esc(dTime(at))+(moved?' | moved from '+esc(dShort(a.startAt)):'')+'</span></td><td>'+esc(className(a.classId))+'</td><td>'+esc(nm?nm[1]:a.bill)+(a.recurring?'<span class="sub">Every week, 8:00 AM</span>':'')+'</td><td class="r num"><b>'+money(a.cents)+'</b></td>'+
+    '<td><span class="tag '+(up?'sch':'act')+'">'+(up?'SCHEDULED':'ASSIGNED')+'</span></td>'+
+    '<td class="r"><button class="btn small line" data-act="rm" data-id="'+esc(a.id)+'">'+(arm?'Tap again to remove':'Remove')+'</button></td></tr>';
+}
+function atable(list,empty){
+  if(!list.length)return '<div class="empty">'+empty+'</div>';
+  return '<div class="scroll"><table><thead><tr><th>Starts</th><th>Class</th><th>Bill</th><th class="r">Amount</th><th>Status</th><th></th></tr></thead><tbody>'+list.map(arow).join("")+'</tbody></table></div>';
+}
+function vTAssign(){
+  var f=S.tform, now=Date.now();
+  var opts=BILLS.map(function(b){return '<option value="'+b[0]+'"'+(f.type===b[0]?' selected':'')+'>'+b[1]+'</option>';}).join("");
+  var rows=classIds().map(function(id){var c=f.cls[id]||{on:false,when:""};
+    return '<div class="crow"><label class="chk" for="on-'+id+'"><input type="checkbox" id="on-'+id+'"'+(c.on?' checked':'')+'>'+esc(className(id))+'</label>'+
+      '<div class="when"><label class="sub" for="wh-'+id+'">First bill date</label><input type="date" id="wh-'+id+'" value="'+esc(c.when)+'"></div></div>';}).join("");
+  var up=S.alist.filter(function(a){return effStart(a)>now;}).sort(function(a,b){return effStart(a)-effStart(b);});
+  var past=S.alist.filter(function(a){return effStart(a)<=now;}).sort(function(a,b){return effStart(b)-effStart(a);}).slice(0,30);
+  return ttop()+'<div class="bar">'+back("thome","Back")+'</div><h2 class="title">Assign Bills</h2>'+
+   '<section class="panel form"><div class="fgrid">'+
+   '<div class="fld"><label for="btype">Type of bill</label><select id="btype">'+opts+'</select></div>'+
+   '<div class="fld"><label for="bamt">Amount</label><div class="money"><b>$</b><input id="bamt" type="text" inputmode="decimal" autocomplete="off" placeholder="0.00" value="'+esc(f.amt)+'"></div></div></div>'+
+   '<div class="fld"><div class="head"><span style="font-weight:700">Which classes, and when</span><button class="btn small line" data-act="allcls">Select all classes</button></div>'+
+   '<span class="sub">The bill repeats every 7 days at 8:00 AM. If a class does not meet that day, or the day is checked as a no class day, the bill moves to the next day that class meets, and later weeks stay on the new day. Leave the date empty to start today.</span></div>'+rows+
+   (f.err?'<div class="err">'+esc(f.err)+'</div>':'')+(f.msg?'<div class="ok">'+esc(f.msg)+'</div>':'')+
+   '<div><button class="btn gold" data-act="assign" style="min-width:240px;min-height:72px;font-size:1.3rem">Assign bill</button></div></section>'+
+   '<section class="panel"><h3 style="margin-bottom:8px">Scheduled for later</h3>'+atable(up,'Nothing scheduled.')+'</section>'+
+   '<section class="panel"><h3 style="margin-bottom:8px">Already assigned</h3>'+atable(past,'No bills assigned yet.')+'</section>';
+}
+function vTClasses(){
+  var rows=S.classes.map(function(c){
+    var ds=classDays(c.id);
+    return '<div class="crow"><div class="fld" style="flex:1 1 200px"><label for="cn-'+esc(c.id)+'">Class name</label><input type="text" id="cn-'+esc(c.id)+'" autocomplete="off" maxlength="30" value="'+esc(c.name)+'"></div>'+
+      '<div class="when" role="group" aria-label="Days '+esc(c.name)+' meets">'+[1,2,3,4,5].map(function(n){
+        return '<label class="chk" style="flex:0 0 auto" for="cd-'+esc(c.id)+'-'+n+'"><input type="checkbox" id="cd-'+esc(c.id)+'-'+n+'"'+(ds.indexOf(n)>-1?' checked':'')+'>'+WDS[n]+'</label>';}).join("")+'</div></div>';}).join("");
+  return ttop()+'<div class="bar">'+back("thome","Back")+'</div><h2 class="title">Classes</h2>'+
+   '<section class="panel form"><h3>Add a class</h3><div class="fgrid"><div class="fld"><label for="cn-new">Name of the new class</label><input type="text" id="cn-new" autocomplete="off" maxlength="30" placeholder="Example: HS1"></div></div>'+
+   '<div><button class="btn gold" data-act="addcls" style="min-width:200px">Add a class</button></div>'+
+   (S.cerr?'<div class="err">'+esc(S.cerr)+'</div>':'')+(S.cmsg?'<div class="ok">'+esc(S.cmsg)+'</div>':'')+'</section>'+
+   '<section class="panel form"><h3>Class names and days</h3><div class="sub">Check the days each class meets with you. Bills and paychecks only land on these days. If one would land on another day, it moves to the next day the class meets.</div>'+rows+
+   '<div><button class="btn gold" data-act="savecls" style="min-width:200px">Save classes</button></div></section>'+
+   '<section class="panel form"><h3>Remove a class</h3>'+
+   '<div class="sub">Removing a class permanently deletes its students and everything that goes with them: their accounts and balances, their jobs and scheduled paychecks, and the bills assigned or scheduled for the class. This cannot be undone.</div>'+
+   S.classes.map(function(c){var arm=S.rmCls===c.id;
+     return '<div class="crow"><div class="chk"><b>'+esc(c.name)+'</b></div><div class="when">'+
+       (arm?'<span class="err">Delete '+esc(c.name)+(S.rmCount?' and its '+S.rmCount+' student'+(S.rmCount===1?'':'s'):' (no students)')+'? Accounts, paychecks and bills are deleted for good.</span>':'')+
+       '<button class="btn small line" data-act="rmcls" data-id="'+esc(c.id)+'" style="min-width:190px">'+(arm?'Tap again to delete':'Remove class')+'</button></div></div>';}).join("")+
+   '</section>';
+}
+/* ---------- no class days calendar ---------- */
+var MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
+function ncDefaultYear(){var n=new Date();return n.getMonth()>=7?n.getFullYear():n.getFullYear()-1;}
+function vTNoClass(){
+  var y=S.ncYear, sc=S.ncScope, nc=S.noClass||{}, all=nc.all||{}, mine=sc==="all"?{}:((nc.cls||{})[sc]||{});
+  var days=sc==="all"?[1,2,3,4,5]:classDays(sc), count=0, months="";
+  for(var m=0;m<12;m++){
+    var mo=(7+m)%12, yr=y+(7+m>11?1:0), first=new Date(yr,mo,1), dim=new Date(yr,mo+1,0).getDate(), cells="";
+    for(var b=0;b<first.getDay();b++)cells+='<span></span>';
+    for(var dn=1;dn<=dim;dn++){
+      var d=new Date(yr,mo,dn), key=dkey(d), wd=d.getDay();
+      var meets=days.indexOf(wd)>-1, isAll=!!all[key], isMine=!!mine[key];
+      var lbl=WDS[wd]+", "+MONTHS[mo]+" "+dn+", "+yr;
+      if(sc==="all"?isAll:isMine)count++;
+      if(!meets)cells+='<button class="nd off" disabled aria-label="'+lbl+' (class does not meet)">'+dn+'</button>';
+      else if(sc!=="all"&&isAll)cells+='<button class="nd lock" disabled aria-label="'+lbl+': no class, set for all classes">'+dn+'<i>all</i></button>';
+      else if(sc==="all"?isAll:isMine)cells+='<button class="nd on" data-act="ncday" data-key="'+key+'" aria-pressed="true" aria-label="'+lbl+': no class. Tap to undo">'+dn+'<i>&times;</i></button>';
+      else cells+='<button class="nd" data-act="ncday" data-key="'+key+'" aria-pressed="false" aria-label="'+lbl+'">'+dn+'</button>';
+    }
+    months+='<section class="panel mon"><h3>'+MONTHS[mo]+' '+yr+'</h3><div class="mgrid">'+["Su","Mo","Tu","We","Th","Fr","Sa"].map(function(x){return '<b class="wh">'+x+'</b>';}).join("")+cells+'</div></section>';
+  }
+  var opts='<option value="all"'+(sc==="all"?' selected':'')+'>All classes</option>'+S.classes.map(function(c){return '<option value="'+esc(c.id)+'"'+(sc===c.id?' selected':'')+'>'+esc(c.name)+' only</option>';}).join("");
+  var meetTxt=sc==="all"?"Weekends are greyed out. A day you check here is a no class day for every class.":esc(className(sc))+" meets "+days.map(function(n){return WDS[n];}).join(", ")+". Greyed days are days it does not meet. Dashed days were already checked for all classes.";
+  return ttop()+'<div class="bar">'+back("thome","Back")+'</div><h2 class="title">No Class Days</h2>'+
+   '<section class="panel form"><div class="sub">Tap a day to check it off. It saves right away. Bills and paychecks on a no class day move to the next day that class meets, and later weeks stay on the new day.</div>'+
+   '<div class="fgrid"><div class="fld"><label for="ncscope">Checking days for</label><select id="ncscope" data-chg="ncscope">'+opts+'</select></div>'+
+   '<div class="fld"><label for="ncyear">School year starts in (August of)</label><div class="row" style="display:flex;gap:10px;align-items:center"><button class="btn small line" data-act="ncprev" aria-label="Previous year">&larr;</button><input type="text" id="ncyear" inputmode="numeric" maxlength="4" data-chg="ncyear" value="'+y+'" style="width:6em;text-align:center"><button class="btn small line" data-act="ncnext" aria-label="Next year">&rarr;</button></div></div></div>'+
+   '<div class="sub">'+meetTxt+'</div>'+
+   '<div><b class="num">'+count+'</b> no class day'+(count===1?'':'s')+' checked for '+(sc==="all"?'all classes':esc(className(sc)))+' in the '+y+' to '+(y+1)+' school year.</div>'+
+   (S.ncerr?'<div class="err">'+esc(S.ncerr)+'</div>':'')+'</section>'+
+   '<div class="cal">'+months+'</div>';
+}
+function ncSave(){
+  var snap={all:Object.assign({},(S.noClass||{}).all||{}),cls:{}};
+  var cl=(S.noClass||{}).cls||{};Object.keys(cl).forEach(function(k){snap.cls[k]=Object.assign({},cl[k]);});
+  S.ncq=(S.ncq||Promise.resolve()).then(function(){return store.setSetting("noClass",snap);}).then(function(){S.ncerr="";}).catch(function(){S.ncerr="Could not save the last change. Check the connection, then tap the day again.";if(S.view==="tnoclass")go("tnoclass");});
+}
+function readRenames(){
+  return S.classes.map(function(c){
+    var el=document.getElementById("cn-"+c.id);var v=el?el.value.trim():"";
+    var ds=[],seen=false;
+    [1,2,3,4,5].forEach(function(n){var cb=document.getElementById("cd-"+c.id+"-"+n);if(cb){seen=true;if(cb.checked)ds.push(n);}});
+    var o={id:c.id,name:v||c.name};
+    var dd=seen?ds:c.days;if(dd)o.days=dd;
+    return o;
+  });
+}
+var WDS=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+function vTFees(){
+  var rows=S.classes.map(function(c){
+    var r=S.fees[c.id]||{}, on=!!r.on;
+    return '<div class="crow"><div class="chk"><b>'+esc(c.name)+'</b></div><div class="when"><button class="btn small '+(on?'gold':'line')+'" data-act="feetoggle" data-id="'+esc(c.id)+'" role="switch" aria-checked="'+on+'" style="min-width:150px">'+(on?'Fee is ON':'Fee is OFF')+'</button>'+
+      (on&&r.since?'<span class="sub">Counting since '+esc(dShort(r.since))+' at '+esc(dTime(r.since))+'</span>':'')+'</div></div>';
+  }).join("");
+  return ttop()+'<div class="bar">'+back("thome","Back")+'</div><h2 class="title">Minimum Balance Fee</h2>'+
+    '<section class="panel"><div>If a student\'s Checking stays under <b>'+money(S.feeMin)+'</b> for 7 days, the student is charged <b>'+money(S.feeAmt)+'</b>. The student is charged again for every week it stays under.</div>'+
+    '<div class="sub" style="margin-top:8px">Counting starts when you turn a class on, so past weeks are not charged. The fee shows in Checking as "Minimum balance fee" the next time the student taps in.</div></section>'+
+    '<section class="panel form"><div class="fgrid">'+
+    '<div class="fld"><label for="fmin">Minimum balance</label><div class="money"><b>$</b><input id="fmin" type="text" inputmode="decimal" autocomplete="off" value="'+toInput(S.feeMin)+'"></div></div>'+
+    '<div class="fld"><label for="ffee">Fee</label><div class="money"><b>$</b><input id="ffee" type="text" inputmode="decimal" autocomplete="off" value="'+toInput(S.feeAmt)+'"></div></div></div>'+
+    (S.ferr?'<div class="err">'+esc(S.ferr)+'</div>':'')+(S.fmsg?'<div class="ok">'+esc(S.fmsg)+'</div>':'')+
+    '<div><button class="btn gold" data-act="savefee" style="min-width:200px">Save amounts</button></div>'+
+    '<div class="sub">New amounts apply to fees from now on. Fees already charged stay the same.</div></section>'+
+    '<section class="panel form"><h3>Which classes</h3>'+rows+'</section>';
+}
+function toInput(c){return c%100===0?String(c/100):(c/100).toFixed(2);}
+function vTLate(){
+  var rows=BILLS.map(function(b){return '<div class="fld"><label for="lf-'+b[0]+'">'+b[1]+'</label><div class="money"><b>$</b><input id="lf-'+b[0]+'" type="text" inputmode="decimal" autocomplete="off" value="'+toInput(S.lateFees[b[0]]||0)+'"></div></div>';}).join("");
+  return ttop()+'<div class="bar">'+back("thome","Back")+'</div><h2 class="title">Late Fees</h2>'+
+    '<section class="panel"><div>A bill that is not paid 7 days after it starts is <b>late</b>. The late fee is added to the bill, and added again for every extra week the bill stays unpaid.</div>'+
+    '<div class="sub" style="margin-top:8px">Set the late fee for each bill. A late fee of $0 still marks the bill late.</div></section>'+
+    '<section class="panel form"><div class="fgrid">'+rows+'</div>'+
+    (S.lerr?'<div class="err">'+esc(S.lerr)+'</div>':'')+(S.lmsg?'<div class="ok">'+esc(S.lmsg)+'</div>':'')+
+    '<div><button class="btn gold" data-act="savelate" style="min-width:200px">Save late fees</button></div></section>';
+}
+function currentJob(jobs,cid){var now=Date.now(),c=null;jobs.forEach(function(j){if(payAt(j.startAt,0,cid)<=now&&(!c||j.startAt>c.startAt))c=j;});return c;}
+function slabel(st){return st.name+(st.num?' | ID '+st.num:'')+' | '+(st.classId?className(st.classId):'No class');}
+function byClassName(a,b){return (a.classId?className(a.classId):"~").localeCompare(b.classId?className(b.classId):"~")||a.name.localeCompare(b.name);}
+function classOpts(sel,blank){
+  return (blank?'<option value=""'+(!sel?' selected':'')+'>No class</option>':'')+S.classes.map(function(c){return '<option value="'+esc(c.id)+'"'+(sel===c.id?' selected':'')+'>'+esc(c.name)+'</option>';}).join("");
+}
+function vTStudents(){
+  var f=S.sform;
+  var list=S.slist.slice().sort(byClassName);
+  var rows=list.map(function(st){
+    var cj=currentJob(S.jlist.filter(function(j){return j.sid===st.key;}),st.classId);
+    var arm=S.rmStu===st.key;
+    return '<tr><td>'+esc(st.name)+(arm?'<span class="sub err">Delete '+esc(st.name)+' and their account, money and paychecks for good? Tap Delete again.</span>':'')+'</td><td>'+esc(st.num||"-")+'</td>'+
+      '<td><select data-chg="setclass" data-key="'+esc(st.key)+'" aria-label="Class for '+esc(st.name)+'">'+classOpts(st.classId,true)+'</select></td>'+
+      '<td><span class="code">'+esc(st.code||st.key)+'</span></td>'+
+      '<td><div class="row"><input type="text" inputmode="numeric" maxlength="12" data-idfor="'+esc(st.key)+'" value="'+esc(st.idCode||"")+'" placeholder="none" aria-label="ID code for '+esc(st.name)+'" style="width:7.5em"><button class="btn small line" data-act="saveidc" data-key="'+esc(st.key)+'">Save</button></div></td>'+
+      '<td>'+esc(cj?cj.job:"-")+'</td>'+
+      '<td class="r"><button class="btn small line" data-act="rmstu" data-key="'+esc(st.key)+'" style="min-width:120px">'+(arm?'Tap again to delete':'Delete')+'</button></td></tr>';
+  }).join("");
+  return ttop()+'<div class="bar">'+back("thome","Back")+'</div><h2 class="title">Students</h2>'+
+   '<section class="panel form"><h3>Add a student</h3><div class="fgrid">'+
+   '<div class="fld"><label for="sname">Name</label><input type="text" id="sname" autocomplete="off" maxlength="40" value="'+esc(f.name)+'"></div>'+
+   '<div class="fld"><label for="snum">Student ID number</label><input type="text" id="snum" autocomplete="off" maxlength="20" value="'+esc(f.num)+'"></div>'+
+   '<div class="fld"><label for="sclass">Class</label><select id="sclass">'+classOpts(f.cls,true)+'</select></div>'+
+   '<div class="fld"><label for="scode">Card code</label><input type="text" id="scode" autocomplete="off" maxlength="60" value="'+esc(f.code)+'"></div>'+
+   '<div class="fld"><label for="sidc">ID code, 6 to 12 digits (leave blank to make one)</label><input type="text" id="sidc" inputmode="numeric" autocomplete="off" maxlength="12" value="'+esc(f.idc||"")+'"></div></div>'+
+   '<div class="sub">To fill in the card code: tap the Card code box, then tap the student\'s card on the reader.</div>'+
+   (S.serr?'<div class="err">'+esc(S.serr)+'</div>':'')+(S.smsg?'<div class="ok">'+esc(S.smsg)+'</div>':'')+
+   '<div><button class="btn gold" data-act="addstudent" style="min-width:220px">Add student</button></div></section>'+
+   '<section class="panel"><h3 style="margin-bottom:8px">All students</h3>'+
+   (list.length?'<div class="scroll"><table><thead><tr><th>Name</th><th>ID number</th><th>Class</th><th>Card code</th><th>ID code</th><th>Current job</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div>':'<div class="empty">No students yet.</div>')+'</section>';
+}
+function jrow(j,activeId){
+  var now=Date.now(), st=S.slist.filter(function(x){return x.key===j.sid;})[0];
+  var first=payAt(j.startAt,0,st&&st.classId), status=first>now?'SCHEDULED':(j.id===activeId?'ACTIVE':'REPLACED');
+  var cls=status==='ACTIVE'?'act':'sch';
+  var arm=S.rmJ===j.id;
+  return '<tr><td>'+esc(st?st.name:j.sid)+(st&&st.num?'<span class="sub">ID '+esc(st.num)+'</span>':'')+'</td><td>'+esc(st&&st.classId?className(st.classId):"-")+'</td><td>'+esc(j.job)+'</td><td class="r num"><b>'+money(j.payCents)+'</b></td>'+
+    '<td>'+esc(dShort(first))+'</td><td><span class="tag '+cls+'">'+status+'</span></td>'+
+    '<td class="r"><button class="btn small line" data-act="rmjob" data-id="'+esc(j.id)+'">'+(arm?'Tap again to remove':'Remove')+'</button></td></tr>';
+}
+function vTJobs(){
+  var f=S.jform;
+  var sopts='<option value="">Choose a student</option>'+S.slist.slice().sort(byClassName).map(function(st){return '<option value="'+esc(st.key)+'"'+(f.sid===st.key?' selected':'')+'>'+esc(slabel(st))+'</option>';}).join("");
+  var act={};S.slist.forEach(function(st){var c=currentJob(S.jlist.filter(function(j){return j.sid===st.key;}),st.classId);if(c)act[st.key]=c.id;});
+  var list=S.jlist.slice().sort(function(a,b){return b.startAt-a.startAt;});
+  return ttop()+'<div class="bar">'+back("thome","Back")+'</div><h2 class="title">Jobs &amp; Pay</h2>'+
+   '<section class="panel form"><div class="fgrid">'+
+   '<div class="fld"><label for="jst">Student</label><select id="jst">'+sopts+'</select></div>'+
+   '<div class="fld"><label for="jjob">Job</label><input type="text" id="jjob" autocomplete="off" maxlength="40" value="'+esc(f.job)+'"></div>'+
+   '<div class="fld"><label for="jpay">Pay every week</label><div class="money"><b>$</b><input id="jpay" type="text" inputmode="decimal" autocomplete="off" placeholder="0.00" value="'+esc(f.pay)+'"></div></div>'+
+   '<div class="fld"><label for="jwhen">First paycheck date</label><input type="date" id="jwhen" value="'+esc(f.when)+'"></div></div>'+
+   '<div class="sub">The student gets paid every 7 days from the first paycheck date. Paychecks are ready at 8:00 AM that day. If the class does not meet that day, or it is a no class day, the paycheck moves to the next day the class meets, and later weeks stay on the new day. Leave the date empty to start today. A new job for the same student replaces the old one from its first paycheck date.</div>'+
+   (f.err?'<div class="err">'+esc(f.err)+'</div>':'')+(f.msg?'<div class="ok">'+esc(f.msg)+'</div>':'')+
+   '<div><button class="btn gold" data-act="assignjob" style="min-width:240px;min-height:72px;font-size:1.3rem">Assign job</button></div></section>'+
+   '<section class="panel"><h3 style="margin-bottom:8px">Jobs</h3>'+
+   (list.length?'<div class="scroll"><table><thead><tr><th>Student</th><th>Class</th><th>Job</th><th class="r">Weekly pay</th><th>First paycheck</th><th>Status</th><th></th></tr></thead><tbody>'+list.map(function(j){return jrow(j,act[j.sid]);}).join("")+'</tbody></table></div>':'<div class="empty">No jobs assigned yet.</div>')+'</section>';
+}
+function readSForm(){
+  if(S.view!=="tstudents")return;
+  S.sform={name:document.getElementById("sname").value,num:document.getElementById("snum").value,cls:document.getElementById("sclass").value,code:document.getElementById("scode").value,idc:document.getElementById("sidc").value};
+}
+function readJForm(){
+  if(S.view!=="tjobs")return;
+  var f=S.jform;
+  f.sid=document.getElementById("jst").value;f.job=document.getElementById("jjob").value;f.pay=document.getElementById("jpay").value;f.when=document.getElementById("jwhen").value;
+}
+function genIdCode(all){
+  var used={};all.forEach(function(x){if(x.idCode)used[x.idCode]=1;});
+  for(var i=0;i<1000;i++){var c=String(100000+Math.floor(Math.random()*900000));if(!used[c])return c;}
+  return String(100000+Math.floor(Math.random()*900000));
+}
+async function doSaveIdCode(skey){
+  readSForm();S.serr="";S.smsg="";
+  var inp=Array.prototype.filter.call(document.querySelectorAll("input[data-idfor]"),function(i){return i.getAttribute("data-idfor")===skey;})[0];
+  var v=inp?inp.value.trim():"";
+  busy=true;
+  try{
+    var all=await store.getAllStudents();
+    var st=all.filter(function(x){return x.key===skey;})[0];
+    if(v&&!/^[0-9]{6,12}$/.test(v)){S.serr="The ID code must be 6 to 12 numbers.";S.slist=all;return go("tstudents");}
+    if(v&&all.some(function(x){return x.idCode===v&&x.key!==skey;})){S.serr="Another student already has ID code "+v+".";S.slist=all;return go("tstudents");}
+    if(!v)v=genIdCode(all);
+    await store.updateStudent(skey,{idCode:v});
+    S.slist=await store.getAllStudents();
+    S.smsg="Saved ID code "+v+(st?" for "+st.name:"")+".";go("tstudents");
+  }catch(e){S.serr="Something went wrong. Try again.";go("tstudents");}
+  finally{busy=false;}
+}
+async function doAddStudent(){
+  readSForm();var f=S.sform;S.serr="";S.smsg="";
+  var name=f.name.trim(), num=f.num.trim(), code=f.code.trim().toUpperCase();
+  if(!name){S.serr="Type the student's name.";return go("tstudents");}
+  if(!code){S.serr="Tap in the Card code box, then tap the card on the reader.";return go("tstudents");}
+  var key=keyOf(code);
+  busy=true;
+  try{
+    var ex=await store.getStudent(key);
+    if(ex){S.serr="That card already belongs to "+ex.name+".";return go("tstudents");}
+    if(num&&S.slist.some(function(x){return x.num===num;})){S.serr="Another student already has ID number "+num+".";return go("tstudents");}
+    var all=await store.getAllStudents();
+    var idc=(f.idc||"").trim();
+    if(idc&&!/^[0-9]{6,12}$/.test(idc)){S.serr="The ID code must be 6 to 12 numbers.";return go("tstudents");}
+    if(idc&&all.some(function(x){return x.idCode===idc;})){S.serr="Another student already has ID code "+idc+".";return go("tstudents");}
+    if(!idc)idc=genIdCode(all);
+    var made=Date.now();
+    await store.addStudent(key,{name:name,num:num,classId:f.cls,code:code,idCode:idc,createdAt:made});
+    await store.addTx({sid:key,acct:"checking",amt:START_CENTS,kind:"deposit",label:"Starting balance",ts:made});
+    S.slist=await store.getAllStudents();
+    S.sform={name:"",num:"",cls:f.cls,code:"",idc:""};S.smsg="Added "+name+" with a "+money(START_CENTS)+" starting balance in Checking. ID code: "+idc+".";go("tstudents");
+  }catch(e){S.serr="Something went wrong. Check the list below. If the student is there, open their account to see if the starting balance arrived.";try{S.slist=await store.getAllStudents();}catch(x){}go("tstudents");}
+  finally{busy=false;}
+}
+async function doAssignJob(){
+  readJForm();var f=S.jform;f.err="";f.msg="";
+  var st=S.slist.filter(function(x){return x.key===f.sid;})[0];
+  if(!st){f.err="Choose a student.";return go("tjobs");}
+  var job=f.job.trim();
+  if(!job){f.err="Type the job.";return go("tjobs");}
+  var cents=parseMoney(f.pay);
+  if(cents===null||cents<=0){f.err="Type the weekly pay, like 40 or 52.50.";return go("tjobs");}
+  var dp=f.when?f.when.split("-"):null, when=dp?new Date(+dp[0],+dp[1]-1,+dp[2],8,0,0).getTime():Date.now();
+  if(isNaN(when)){f.err="The first paycheck date is not valid.";return go("tjobs");}
+  busy=true;
+  try{
+    await store.addJob({sid:st.key,job:job,payCents:cents,startAt:when,createdAt:Date.now()});
+    S.jlist=await store.getAllJobs();
+    f.msg=st.name+": "+job+", "+money(cents)+" every week, first paycheck "+dShort(when)+".";
+    f.sid="";f.job="";f.pay="";f.when="";
+    go("tjobs");
+  }catch(e){f.err="Something went wrong. Check the list below before trying again.";go("tjobs");}
+  finally{busy=false;}
+}
+function newBForm(){return {cls:S.classes[0]?S.classes[0].id:"",sel:{},amt:"",note:"",acct:"checking",confirm:false,msg:"",err:""};}
+function bonusStudents(f){return S.slist.filter(function(x){return x.classId===f.cls;}).sort(function(a,b){return a.name.localeCompare(b.name);});}
+function vTBonus(){
+  var f=S.bform, stu=bonusStudents(f);
+  var picked=stu.filter(function(x){return f.sel[x.key];});
+  if(f.confirm){
+    var c=parseMoney(f.amt);
+    return ttop()+'<h2 class="title">Deposit bonus?</h2><section class="panel form">'+
+      '<div class="name num">'+money(c)+' into '+acctName(f.acct)+'</div>'+
+      '<div>'+(f.note.trim()?'Note: <b>'+esc(f.note.trim())+'</b>':'No note')+'</div>'+
+      '<div><b>'+picked.length+(picked.length===1?' student':' students')+' in '+esc(className(f.cls))+':</b><br>'+picked.map(function(x){return esc(x.name);}).join(', ')+'</div>'+
+      '<div class="sub">Total: '+money(c*picked.length)+'</div>'+
+      '<div class="btnrow" style="justify-content:flex-start"><button class="btn line" data-act="bback">Go back</button><button class="btn gold" data-act="bdo">Deposit '+money(c)+(picked.length>1?' each':'')+'</button></div></section>';
+  }
+  var copts=S.classes.map(function(c){return '<option value="'+esc(c.id)+'"'+(f.cls===c.id?' selected':'')+'>'+esc(c.name)+'</option>';}).join("");
+  var rows=stu.map(function(st){
+    return '<label class="crow" for="bs-'+esc(st.key)+'" style="cursor:pointer"><span class="chk"><input type="checkbox" id="bs-'+esc(st.key)+'"'+(f.sel[st.key]?' checked':'')+'>'+esc(st.name)+(st.num?'<span class="sub"> ID '+esc(st.num)+'</span>':'')+'</span></label>';
+  }).join("");
+  return ttop()+'<div class="bar">'+back("thome","Back")+'</div><h2 class="title">Bonuses</h2>'+
+   '<section class="panel form"><div class="fgrid"><div class="fld"><label for="bcls">Class</label><select id="bcls" data-chg="bclass">'+copts+'</select></div></div>'+
+   '<div class="head"><span style="font-weight:700">Who gets the bonus</span>'+(stu.length?'<button class="btn small line" data-act="ball">Select all students</button>':'')+'</div>'+
+   (stu.length?rows:'<div class="empty">No students in this class yet. Add them on the Students page.</div>')+
+   '<div class="fgrid">'+
+   '<div class="fld"><label for="bamt2">Amount for each student</label><div class="money"><b>$</b><input id="bamt2" type="text" inputmode="decimal" autocomplete="off" placeholder="0.00" value="'+esc(f.amt)+'"></div></div>'+
+   '<div class="fld"><label for="bnote">Note</label><input type="text" id="bnote" autocomplete="off" maxlength="50" placeholder="Example: Attendance" value="'+esc(f.note)+'"></div>'+
+   '</div><div class="sub">Bonuses are deposited into Checking.</div>'+
+   (f.err?'<div class="err">'+esc(f.err)+'</div>':'')+(f.msg?'<div class="ok">'+esc(f.msg)+'</div>':'')+
+   '<div><button class="btn gold" data-act="bpreview" style="min-width:240px;min-height:72px;font-size:1.3rem">Review bonus</button></div></section>';
+}
+function readBForm(){
+  var f=S.bform;
+  if(S.view!=="tbonus"||f.confirm)return;
+  var sel={};
+  bonusStudents(f).forEach(function(st){var el=document.getElementById("bs-"+st.key);if(el&&el.checked)sel[st.key]=true;});
+  f.sel=sel;f.amt=document.getElementById("bamt2").value;f.note=document.getElementById("bnote").value;
+}
+async function doBonus(){
+  var f=S.bform, cents=parseMoney(f.amt), picked=bonusStudents(f).filter(function(x){return f.sel[x.key];});
+  var label=f.note.trim()?"Bonus: "+f.note.trim():"Bonus", n=0, now=Date.now();
+  busy=true;
+  try{
+    for(var i=0;i<picked.length;i++){
+      var st=picked[i];
+      await store.addTx({sid:st.key,acct:f.acct,amt:cents,kind:"bonus",label:label,ts:now+i});n++;
+      if(f.acct==="savings"&&!st.interestAnchor){await store.updateStudent(st.key,{interestAnchor:now});st.interestAnchor=now;}
+    }
+    f.msg="Deposited "+money(cents)+" into "+acctName(f.acct)+" for "+n+(n===1?" student":" students")+(f.note.trim()?" ("+f.note.trim()+")":"")+".";
+    f.err="";f.confirm=false;f.sel={};f.amt="";f.note="";go("tbonus");
+  }catch(e){
+    f.err="Stopped after "+n+" of "+picked.length+". Check those accounts before trying again.";f.msg="";f.confirm=false;go("tbonus");
+  }
+  finally{busy=false;}
+}
+function readForm(){
+  if(S.view!=="tassign")return;
+  var f=S.tform;
+  f.type=document.getElementById("btype").value;f.amt=document.getElementById("bamt").value;
+  classIds().forEach(function(id){f.cls[id]={on:document.getElementById("on-"+id).checked,when:document.getElementById("wh-"+id).value};});
+}
+async function doAssign(){
+  readForm();var f=S.tform;f.err="";f.msg="";
+  var cents=parseMoney(f.amt);
+  if(cents===null||cents<=0){f.err="Type the bill amount, like 120 or 45.50.";return go("tassign");}
+  var picks=classIds().filter(function(id){return f.cls[id]&&f.cls[id].on;});
+  if(!picks.length){f.err="Check at least one class.";return go("tassign");}
+  var starts={};
+  for(var k=0;k<picks.length;k++){
+    var w=f.cls[picks[k]].when, dp=w?w.split("-"):null;
+    var st=dp?new Date(+dp[0],+dp[1]-1,+dp[2],8,0,0).getTime():new Date().setHours(8,0,0,0);
+    if(isNaN(st)){f.err="One of the first bill dates is not a real date.";return go("tassign");}
+    starts[picks[k]]=st;
+  }
+  busy=true;
+  try{
+    for(var p=0;p<picks.length;p++){
+      await store.addAssignment({classId:picks[p],bill:f.type,cents:cents,startAt:starts[picks[p]],createdAt:Date.now(),recurring:true});
+    }
+    var nm=BILLS.filter(function(b){return b[0]===f.type;})[0][1];
+    f.msg="Assigned "+nm+" "+money(cents)+" to "+picks.length+(picks.length===1?" class":" classes")+", due every week at 8:00 AM.";
+    f.amt="";
+    S.alist=await store.getAllAssignments();
+    go("tassign");
+  }catch(e){f.err="Something went wrong. Check the list below before trying again.";try{S.alist=await store.getAllAssignments();}catch(x){}go("tassign");}
+  finally{busy=false;}
+}
+async function openStuPicker(){
+  if(busy)return;
+  busy=true;try{S.slist=await store.getAllStudents();}catch(e){S.slist=[];}finally{busy=false;}
+  S.verr="";S.vsel="";go("tview");
+}
+function vTView(){
+  var list=S.slist.slice().sort(byClassName);
+  var opts='<option value="">Choose a student</option>'+list.map(function(st){
+    return '<option value="'+esc(st.key)+'"'+(S.vsel===st.key?' selected':'')+'>'+esc(slabel(st))+'</option>';}).join("")+
+    (db&&db.exportAll?'<option value="DEMO">Practice Student (sample account)</option>':'');
+  return ttop()+'<div class="bar">'+back("thome","Back")+'</div><h2 class="title">View as a Student</h2>'+
+   '<section class="panel form"><div class="sub">See the bank the way a student sees it. You do not need their PIN. This is the student\'s real account, so anything you do inside it, like paying a bill or moving money, changes their account. Tap Done to leave. Then enter the teacher PIN again to come back.</div>'+
+   (list.length?'':'<div class="empty">No students yet. Add a student first.</div>')+
+   '<div class="fld"><label for="vstu">Student</label><select id="vstu">'+opts+'</select></div>'+
+   (S.verr?'<div class="err">'+esc(S.verr)+'</div>':'')+
+   '<div><button class="btn gold" data-act="tviewgo" style="min-width:240px">Open student view</button></div></section>';
+}
+async function teacherAct(a,el){
+  if(busy)return;
+  if(a==="tbackup"||a==="bkdo"||a==="bkdl"||a==="bkfile"||a==="bkcancel"||a==="bkrestore"||a==="bkreload")return backupAct(a,el);
+  if(a!=="rmstu")S.rmStu=null;
+  if(a==="thome"){busy=true;try{S.slist=await store.getAllStudents();}catch(e){}finally{busy=false;}}
+  try{
+    if(a==="thome"){return go("thome");}
+    if(a==="tassign"){busy=true;try{S.alist=await store.getAllAssignments();}finally{busy=false;}S.rmId=null;S.tform.err="";S.tform.msg="";return go("tassign");}
+    if(a==="tclasses"){S.cmsg="";S.cerr="";S.rmCls=null;return go("tclasses");}
+    if(a==="tnoclass"){S.ncerr="";return go("tnoclass");}
+    if(a==="ncday"){
+      var nk=el.getAttribute("data-key"), nc0=S.noClass=JSON.parse(JSON.stringify(S.noClass||{}));
+      nc0.all=nc0.all||{};nc0.cls=nc0.cls||{};
+      var tg=S.ncScope==="all"?nc0.all:(nc0.cls[S.ncScope]=nc0.cls[S.ncScope]||{});
+      if(tg[nk])delete tg[nk];else tg[nk]=1;
+      ncSave();var y0=window.scrollY;go("tnoclass");window.scrollTo(0,y0);return;
+    }
+    if(a==="ncscope"){S.ncScope=el.value;return go("tnoclass");}
+    if(a==="ncyear"){var yv=parseInt(el.value,10);if(yv>=2000&&yv<=2100)S.ncYear=yv;return go("tnoclass");}
+    if(a==="ncprev"){S.ncYear--;return go("tnoclass");}
+    if(a==="ncnext"){S.ncYear++;return go("tnoclass");}
+    if(a==="tfees"){
+      busy=true;try{S.fees=await store.getSetting("fees");var cfg=await store.getSetting("feeAmounts");
+        S.feeMin=cfg.minCents>0?cfg.minCents:FEE_MIN;S.feeAmt=cfg.feeCents>0?cfg.feeCents:FEE_AMT;}finally{busy=false;}
+      S.fmsg="";S.ferr="";return go("tfees");
+    }
+    if(a==="tbonus"){
+      busy=true;try{S.slist=await store.getAllStudents();}finally{busy=false;}
+      S.bform=newBForm();return go("tbonus");
+    }
+    if(a==="bclass"){readBForm();S.bform.cls=el.value;S.bform.sel={};S.bform.err="";S.bform.msg="";return go("tbonus");}
+    if(a==="ball"){
+      readBForm();var bs=bonusStudents(S.bform), all2=bs.every(function(x){return S.bform.sel[x.key];});
+      S.bform.sel={};if(!all2)bs.forEach(function(x){S.bform.sel[x.key]=true;});
+      return go("tbonus");
+    }
+    if(a==="bpreview"){
+      readBForm();var bf=S.bform;bf.err="";bf.msg="";
+      var bc=parseMoney(bf.amt), bp=bonusStudents(bf).filter(function(x){return bf.sel[x.key];});
+      if(!bp.length){bf.err="Check at least one student.";return go("tbonus");}
+      if(bc===null||bc<=0){bf.err="Type the bonus amount, like 5 or 2.50.";return go("tbonus");}
+      bf.confirm=true;return go("tbonus");
+    }
+    if(a==="bback"){S.bform.confirm=false;return go("tbonus");}
+    if(a==="bdo")return doBonus();
+    if(a==="tstudents"){
+      busy=true;try{S.slist=await store.getAllStudents();S.jlist=await store.getAllJobs();}finally{busy=false;}
+      S.serr="";S.smsg="";return go("tstudents");
+    }
+    if(a==="rmstu"){
+      readSForm();
+      var dk=el.getAttribute("data-key");S.smsg="";S.serr="";
+      var dst=S.slist.filter(function(x){return x.key===dk;})[0];
+      if(!dst){S.rmStu=null;return go("tstudents");}
+      if(S.rmStu!==dk){S.rmStu=dk;return go("tstudents");}
+      busy=true;
+      try{
+        var djs=await store.getJobs(dk);
+        for(var dj=0;dj<djs.length;dj++){await store.deleteJob(djs[dj].id);}
+        await store.deleteStudentTx(dk);
+        await store.deleteStudent(dk);
+        S.slist=await store.getAllStudents();S.jlist=await store.getAllJobs();
+        S.smsg="Deleted "+dst.name+" and all of their account data.";
+      }catch(e){S.serr="Something went wrong. Check the student list, then try again.";try{S.slist=await store.getAllStudents();}catch(x){}}
+      finally{busy=false;S.rmStu=null;}
+      return go("tstudents");
+    }
+    if(a==="tviewgo"){
+      var vs=document.getElementById("vstu"), vk=vs?vs.value:"";
+      if(!vk){S.verr="Choose a student first.";return go("tview");}
+      S.verr="";S.vsel=vk;return handleCard(vk,true);
+    }
+    if(a==="addstudent")return doAddStudent();
+    if(a==="saveidc")return doSaveIdCode(el.getAttribute("data-key"));
+    if(a==="tpins"){
+      busy=true;try{S.slist=await store.getAllStudents();}finally{busy=false;}
+      S.showPins=false;S.rmPin=null;return go("tpins");
+    }
+    if(a==="togglepins"){S.showPins=!S.showPins;return go("tpins");}
+    if(a==="resetpin"){
+      var rk=el.getAttribute("data-key");
+      if(S.rmPin!==rk){S.rmPin=rk;return go("tpins");}
+      busy=true;try{await store.updateStudent(rk,{pin:""});}finally{busy=false;}
+      S.slist.forEach(function(x){if(x.key===rk)x.pin="";});S.rmPin=null;return go("tpins");
+    }
+    if(a==="setclass"){
+      readSForm();var skey=el.getAttribute("data-key"), v=el.value;
+      busy=true;try{await store.updateStudent(skey,{classId:v});}finally{busy=false;}
+      S.slist.forEach(function(x){if(x.key===skey)x.classId=v;});return go("tstudents");
+    }
+    if(a==="tjobs"){
+      busy=true;try{S.slist=await store.getAllStudents();S.jlist=await store.getAllJobs();}finally{busy=false;}
+      S.rmJ=null;S.jform.err="";S.jform.msg="";return go("tjobs");
+    }
+    if(a==="assignjob")return doAssignJob();
+    if(a==="rmjob"){
+      readJForm();var jid=el.getAttribute("data-id");
+      if(S.rmJ!==jid){S.rmJ=jid;return go("tjobs");}
+      busy=true;try{await store.deleteJob(jid);S.jlist=await store.getAllJobs();}finally{busy=false;}
+      S.rmJ=null;return go("tjobs");
+    }
+    if(a==="tlate"){
+      busy=true;try{S.lateFees=await store.getSetting("lateFees");}finally{busy=false;}
+      S.lmsg="";S.lerr="";return go("tlate");
+    }
+    if(a==="savelate"){
+      var lf={},bad=false;S.lmsg="";S.lerr="";
+      BILLS.forEach(function(b){var v=document.getElementById("lf-"+b[0]).value.trim();var c=v===""?0:parseMoney(v);if(c===null)bad=true;lf[b[0]]=c||0;});
+      if(bad){S.lerr="Type a number like 10 or 12.50 in each box.";return go("tlate");}
+      busy=true;try{await store.setSetting("lateFees",lf);}finally{busy=false;}
+      S.lateFees=lf;S.lmsg="Saved.";return go("tlate");
+    }
+    if(a==="savefee"){
+      var mc=parseMoney(document.getElementById("fmin").value), fc=parseMoney(document.getElementById("ffee").value);
+      S.fmsg="";S.ferr="";
+      if(mc===null||mc<=0||fc===null||fc<=0){S.ferr="Type a number above 0 in both boxes, like 100 or 15.";return go("tfees");}
+      busy=true;try{await store.setSetting("feeAmounts",{minCents:mc,feeCents:fc});}finally{busy=false;}
+      S.feeMin=mc;S.feeAmt=fc;S.fmsg="Saved.";return go("tfees");
+    }
+    if(a==="feetoggle"){
+      var cid=el.getAttribute("data-id"), r0=S.fees[cid]||{}, nf=Object.assign({},S.fees);
+      nf[cid]=r0.on?{on:false,since:r0.since||0}:{on:true,since:Date.now()};
+      busy=true;try{await store.setSetting("fees",nf);}finally{busy=false;}
+      S.fees=nf;return go("tfees");
+    }
+    if(a==="allcls"){readForm();var all=classIds().every(function(id){return S.tform.cls[id].on;});classIds().forEach(function(id){S.tform.cls[id].on=!all;});return go("tassign");}
+    if(a==="assign")return doAssign();
+    if(a==="rm"){
+      readForm();var id=el.getAttribute("data-id");
+      if(S.rmId!==id){S.rmId=id;return go("tassign");}
+      busy=true;try{await store.deleteAssignment(id);S.alist=await store.getAllAssignments();}finally{busy=false;}
+      S.rmId=null;return go("tassign");
+    }
+    if(a==="rmcls"){
+      var rid=el.getAttribute("data-id");S.cmsg="";S.cerr="";
+      var rc=S.classes.filter(function(c){return c.id===rid;})[0];
+      if(!rc){S.rmCls=null;return go("tclasses");}
+      if(S.classes.length<=1){S.rmCls=null;S.cerr="You need to keep at least one class.";return go("tclasses");}
+      if(S.rmCls!==rid){
+        busy=true;try{var sl0=await store.getAllStudents();S.rmCount=sl0.filter(function(x){return x.classId===rid;}).length;}finally{busy=false;}
+        S.rmCls=rid;return go("tclasses");
+      }
+      busy=true;
+      try{
+        var keep=readRenames().filter(function(c){return c.id!==rid;});
+        var sl1=await store.getAllStudents(), gone=0;
+        for(var si=0;si<sl1.length;si++){
+          var st1=sl1[si];if(st1.classId!==rid)continue;
+          var js=await store.getJobs(st1.key);
+          for(var ji=0;ji<js.length;ji++){await store.deleteJob(js[ji].id);}
+          await store.deleteStudentTx(st1.key);
+          await store.deleteStudent(st1.key);
+          gone++;
+        }
+        var as1=await store.getAssignments(rid);
+        for(var ai=0;ai<as1.length;ai++){await store.deleteAssignment(as1[ai].id);}
+        var fe=await store.getSetting("fees");
+        if(fe&&fe[rid]){delete fe[rid];await store.setSetting("fees",fe);}
+        await store.setSetting("classes",{list:keep});
+        S.classes=keep;S.rmCls=null;S.fees=fe||{};
+        S.cmsg="Removed "+rc.name+(gone?" and "+gone+" student"+(gone===1?"":"s")+", with all of their accounts, paychecks and bills.":".");
+      }catch(e){S.rmCls=null;S.cerr="Something went wrong part way through. Check the class and student lists, then try again.";try{S.classes=classesFrom(await store.getSetting("classes"));}catch(x){}}
+      finally{busy=false;}
+      return go("tclasses");
+    }
+    if(a==="savecls"){
+      var list=readRenames();S.cmsg="";S.cerr="";S.rmCls=null;
+      var seen={},dupe=false;list.forEach(function(c){var k=c.name.toLowerCase();if(seen[k])dupe=true;seen[k]=1;});
+      if(dupe){S.cerr="Two classes have the same name. Give each class its own name.";return go("tclasses");}
+      var nodays=list.filter(function(c){return c.days&&!c.days.length;})[0];
+      /* an empty days list would be saved as "none"; the check above stops that */
+      if(nodays){S.cerr="Check at least one day for "+nodays.name+".";return go("tclasses");}
+      busy=true;try{await store.setSetting("classes",{list:list});}finally{busy=false;}
+      S.classes=list;S.cmsg="Saved.";return go("tclasses");
+    }
+    if(a==="addcls"){
+      var nm=document.getElementById("cn-new").value.trim();S.cmsg="";S.cerr="";S.rmCls=null;
+      var cur=readRenames();
+      if(!nm){S.cerr="Type a name for the new class.";return go("tclasses");}
+      if(cur.some(function(c){return c.name.toLowerCase()===nm.toLowerCase();})){S.cerr="You already have a class named "+nm+".";return go("tclasses");}
+      var mx=0;cur.forEach(function(c){var n=parseInt(c.id.slice(1),10);if(n>mx)mx=n;});
+      var list2=cur.concat([{id:"c"+(mx+1),name:nm}]);
+      busy=true;try{await store.setSetting("classes",{list:list2});}finally{busy=false;}
+      S.classes=list2;S.cmsg="Added "+nm+".";return go("tclasses");
+    }
+  }catch(e){busy=false;go("error");}
+}
+
+/* ---------- events ---------- */
+document.addEventListener("click",function(e){
+  var el=e.target.closest("[data-act]");if(!el||el.disabled)return;
+  touch();
+  var a=el.getAttribute("data-act");
+  if(a==="practice"){if(S.teacher)return openStuPicker();return handleCard("DEMO",true);}
+  if(a==="spk")return spinKey(el.getAttribute("data-k"));
+  if(a==="icodego"){if(busy)return;S.teacher=false;S.student=null;S.icode={buf:"",msg:"",bad:0};return go("icode");}
+  if(a==="ick")return icodeKey(el.getAttribute("data-k"));
+  if(a==="done")return logout();
+  if(a==="teacher")return openPin();
+  if(a==="pk")return pinKey(el.getAttribute("data-k"));
+  if(a==="lock")return logout();
+  if(S.teacher)return teacherAct(a,el);
+  if(!S.student)return;
+  if(a==="home"){S.gErr="";return go("home");}
+  if(a==="transfer"){S.tr={from:"",to:"",amt:"",err:""};return go("transfer");}
+  if(a==="trreview"){
+    var tt=S.tr;tt.from=document.getElementById("tfrom").value;tt.to=document.getElementById("tto").value;tt.amt=document.getElementById("tamt").value;tt.err="";
+    var tc=parseMoney(tt.amt);
+    if(!tt.from||!tt.to){tt.err="Choose an account for Transfer from and for Transfer to.";return go("transfer");}
+    if(tt.from===tt.to){tt.err="Choose two different accounts.";return go("transfer");}
+    if(tc===null||tc<=0){tt.err="Type an amount like 25 or 12.50.";return go("transfer");}
+    if(bal(S.tx,tt.from)<tc){tt.err="Not enough money in "+acctName(tt.from)+". You have "+money(bal(S.tx,tt.from))+".";return go("transfer");}
+    return go("trconfirm");
+  }
+  if(a==="trdo")return doTransfer();
+  if(a==="checking"||a==="savings"||a==="paid"||a==="bills")return go(a);
+  if(a==="getcheck")return doGetCheck();
+  if(a==="bill"){var id=el.getAttribute("data-id");var nm=BILLS.filter(function(b){return b[0]===id;})[0][1];var dd=dueFor(id);if(!dd.length)return go("bills");var oo=owed(dd[0]);S.bill={id:id,name:nm,cents:oo.base,late:oo.late,weeks:oo.weeks,aid:dd[0].id};return go("confirm");}
+  if(a==="groc"){
+    var inp=document.getElementById("gval");S.gVal=inp?inp.value:"";
+    var c=parseMoney(S.gVal);
+    if(c===null||c<=0){S.gErr="Type a number like 45.50";return go("bills");}
+    S.gErr="";S.gVal="";S.bill={id:"groceries",name:"Groceries",cents:c};return go("confirm");
+  }
+  if(a==="paybill")return doPayBill();
+});
+document.addEventListener("change",function(e){
+  var t=e.target;
+  if(t&&(t.id==="tfrom"||t.id==="tto")){touch();return;}
+  var el=t&&t.closest?t.closest("[data-chg]"):null;
+  if(!el||!S.teacher)return;
+  touch();teacherAct(el.getAttribute("data-chg"),el);
+});
+document.addEventListener("pointerdown",touch);
+
+/* NFC reader acts like a keyboard: it types the card code, then Enter. */
+var buf="",lastKey=0;
+document.addEventListener("keydown",function(e){
+  touch();
+  if(S.view==="tpin"){if(/^[0-9]$/.test(e.key))pinKey(e.key);else if(e.key==="Backspace")pinKey("bk");return;}
+  if(S.teacher)return;
+  if(e.target&&/^(INPUT|TEXTAREA)$/.test(e.target.tagName)){
+    if(e.key==="Enter"&&e.target.id==="gval"){e.preventDefault();var b=document.querySelector('[data-act="groc"]');if(b)b.click();}
+    return;
+  }
+  var now=Date.now();if(now-lastKey>500)buf="";lastKey=now;
+  if(e.key==="Enter"){if(buf.length>=3)handleCard(buf);buf="";return;}
+  if(e.key&&e.key.length===1)buf+=e.key;
+});
+
+/* sign out after a quiet minute so the next student starts fresh */
+setInterval(function(){
+  var idle=Date.now()-lastActive;
+  if(S.view==="unknown"||S.view==="error"){if(idle>8000)logout();return;}
+  if(S.view==="tpin"||S.view==="spin"||S.view==="icode"){if(idle>=60000)logout();return;}
+  if(S.teacher){if(idle>=180000)logout();return;}
+  if(!S.student){idleEl.hidden=true;return;}
+  if(S.view==="welcome")return;
+  if(idle>=IDLE_MS){logout();return;}
+  if(idle>=WARN_MS){idleEl.hidden=false;idleEl.textContent="Signing out in "+Math.ceil((IDLE_MS-idle)/1000)+" seconds. Tap the screen to stay.";}
+  else idleEl.hidden=true;
+},500);
+
+
+/* ---------- backup & restore (standalone build only) ---------- */
+var BK_FMT="bank-of-career-ed-backup";
+S.bkMsg="";S.bkErr="";S.bkPending=null;
+var CAN_SHARE=(function(){try{if(!navigator.canShare||!navigator.share)return false;return !!navigator.canShare({files:[new File(["{}"],"t.json",{type:"application/json"})]});}catch(e){return false;}})();
+function plural(n,w){return n+" "+w+(n===1?"":"s");}
+function bkReminder(){
+  if(!db||!db.hasData||!db.hasData())return "";
+  var lb=db.getMeta("lastBackup"), days=lb?Math.floor((Date.now()-lb)/DAY):null;
+  if(lb&&days<7)return "";
+  return '<div class="note" style="border-color:var(--out);margin-bottom:16px;max-width:none;display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap"><span><b>Time to back up.</b> '+(lb?'Your last backup was '+plural(days,"day")+' ago.':'You have not made a backup yet.')+'</span><button class="btn gold small" data-act="tbackup">Back Up</button></div>';
+}
+function vTBackup(){
+  var lb=db.getMeta("lastBackup"), cur=db.counts(), p=S.bkPending;
+  var h=ttop()+'<div class="bar">'+back("thome","Back")+'</div><h2 class="title">Backup &amp; Restore</h2>';
+  h+='<section class="panel form"><h3>Back up this bank</h3>'+
+    '<div class="sub">Saves one file with everything in this bank: students, PINs, balances, jobs, bills, classes and the teacher PIN. Keep the file somewhere safe, like your school Google Drive. It has student information in it, so do not share it.</div>'+
+    '<div>'+(lb?'Last backup: <b>'+esc(dLong(lb))+'</b>':'<b class="err">No backup yet.</b>')+'</div>'+
+    '<div class="btnrow" style="justify-content:flex-start"><button class="btn gold" data-act="bkdo" style="min-width:240px">Back Up Now</button>'+(CAN_SHARE?'<button class="btn line" data-act="bkdl">Download file instead</button>':'')+'</div>'+
+    (S.bkMsg?'<div class="ok">'+esc(S.bkMsg)+'</div>':'')+'</section>';
+  h+='<section class="panel form"><h3>Restore from a backup</h3>';
+  if(!p){
+    h+='<div class="sub">Use this if the bank lost its data or you are moving to a new iPad. Restoring replaces everything on this iPad with what is in the backup file.</div>'+
+      '<div><label class="btn line" for="bkfile" style="min-width:240px;cursor:pointer">Choose a backup file</label><input type="file" id="bkfile" data-chg="bkfile" accept=".json,application/json" style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden"></div>';
+  }else{
+    h+='<div class="note"><b>'+esc(p.name)+'</b><br>Made '+(p.snap.madeAt?esc(dLong(p.snap.madeAt)):'at an unknown time')+'. It has '+plural(p.sc,"student")+' and '+plural(p.tc,"transaction")+'.<br>This iPad right now has '+plural(cur.students,"student")+' and '+plural(cur.tx,"transaction")+'.</div>'+
+      '<div class="sub"><b>Restoring replaces everything on this iPad</b> with this backup, including the teacher PIN. Anything entered since the backup was made will be gone.</div>'+
+      '<div class="btnrow" style="justify-content:flex-start"><button class="btn gold" data-act="bkrestore">Replace Everything With This Backup</button><button class="btn line" data-act="bkcancel">Cancel</button></div>';
+  }
+  if(S.bkErr)h+='<div class="err">'+esc(S.bkErr)+'</div>';
+  return h+'</section>';
+}
+function vBkDone(){return '<main class="center"><h1 class="big">Restored!</h1><div class="note">The bank now has the data from your backup. Tap OK to restart the bank.</div><button class="btn gold" data-act="bkreload" style="min-width:200px">OK</button></main>';}
+function bkDownload(f){var u=URL.createObjectURL(f.blob),a=document.createElement("a");a.href=u;a.download=f.name;document.body.appendChild(a);a.click();setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(u);},4000);}
+function backupAct(a,el){
+  if(a==="tbackup"){S.bkMsg="";S.bkErr="";S.bkPending=null;return go("tbackup");}
+  if(a==="bkdo"||a==="bkdl"){
+    /* build the file and start the share/download synchronously so the iPad treats it as a tap */
+    var snap=db.snapshot(), name="bank-backup-"+dkey(new Date())+".json";
+    var blob=new Blob([JSON.stringify(snap)],{type:"application/json"});
+    var file=new File([blob],name,{type:"application/json"});
+    var saved=function(how){return db.setMeta("lastBackup",Date.now()).then(function(){S.bkErr="";S.bkMsg=how+" File name: "+name+". Keep it somewhere safe, like your school Google Drive.";go("tbackup");});};
+    if(a==="bkdo"&&CAN_SHARE){
+      return navigator.share({files:[file],title:"Bank of Career Ed backup"}).then(function(){return saved("Backup saved.");},function(e){
+        if(e&&e.name==="AbortError"){S.bkMsg="";S.bkErr="";return go("tbackup");}
+        S.bkMsg="";S.bkErr="Could not share the file. Tap Download file instead.";go("tbackup");});
+    }
+    bkDownload({blob:blob,name:name});
+    return saved("Backup file created. Look for it in your Downloads.");
+  }
+  if(a==="bkfile"){
+    var f0=el.files&&el.files[0];if(!f0)return;
+    return f0.text().then(function(txt){
+      el.value="";
+      var o;try{o=JSON.parse(txt);}catch(e){S.bkMsg="";S.bkErr="That file could not be read. Choose a backup file made by this bank.";S.bkPending=null;return go("tbackup");}
+      var bad=db.checkBackup(o);
+      if(bad){S.bkMsg="";S.bkErr=bad;S.bkPending=null;return go("tbackup");}
+      S.bkMsg="";S.bkErr="";S.bkPending={name:f0.name,snap:o,sc:Object.keys(o.data.students).length,tc:Object.keys(o.data.tx).length};
+      go("tbackup");
+    }).catch(function(){S.bkMsg="";S.bkErr="That file could not be opened.";go("tbackup");});
+  }
+  if(a==="bkcancel"){S.bkPending=null;S.bkErr="";S.bkMsg="";return go("tbackup");}
+  if(a==="bkrestore"){
+    var p=S.bkPending;if(!p)return;
+    busy=true;
+    return db.restoreFrom(p.snap).then(function(){S.bkPending=null;go("bkdone");}).catch(function(){
+      S.bkMsg="";S.bkErr="The restore did not finish, so nothing was changed. Try again.";go("tbackup");
+    }).then(function(){busy=false;});
+  }
+  if(a==="bkreload")return location.reload();
+}
+VIEWS.tbackup=vTBackup;VIEWS.bkdone=vBkDone;
+
+/* ---------- start ---------- */
+(async function init(){
+  try{db=await LocalDB.open();}catch(e){db=null;}
+  if(!db){seedMem();storeNote="Warning: this browser cannot save data. Nothing will be kept.";}
+  else if(db.mode==="memory"){storeNote="Warning: this browser cannot save data. Do not use a private window.";}
+  try{if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(function(){});}catch(e){}
+  go("start");
+})();
+})();
+</script>
+</body>
+</html>
