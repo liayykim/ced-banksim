@@ -1,6 +1,6 @@
 # Bank of Career Ed
 
-A classroom play-money bank for a personal finance unit. Students tap a card (or type an ID code), check their accounts, pay bills, and move money between Checking and Savings. Teachers assign jobs, bills, bonuses and fees.
+A classroom play-money bank for a personal finance unit. Students type their ID number, check their accounts, pay bills, and move money between Checking and Savings. Teachers assign jobs, bills, bonuses and fees.
 
 **All bank data stays on the iPad it was entered on.** There is no account, no online database, and nothing is sent anywhere. Each teacher's iPad has its own separate bank.
 
@@ -61,5 +61,5 @@ When a new version is sent to you:
 
 - **Do not use a private browsing window.** Nothing can be saved there. The start screen shows a warning if the browser cannot save.
 - **Clearing Safari website data** can erase the bank. Back up first.
-- **Card reader:** a USB NFC reader that types the card code and presses Enter works as a keyboard. Tap the Card code box on the Students screen, then tap the card.
+- **Adding students:** the Students screen asks only for a name, a class and a 6 to 12 digit ID number (leave it blank and the bank makes one). Students sign in with that ID number. Students added before this update can still tap their cards.
 - **Delete Student** and **Remove Class** are permanent. Restore from a backup if one was a mistake.

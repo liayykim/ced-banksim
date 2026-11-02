@@ -1,6 +1,6 @@
 /* Bank of Career Ed service worker: keeps the app working offline.
    When you upload a new version of the app, change VERSION below so every iPad picks it up. */
-var VERSION="bank-v1";
+var VERSION="bank-v2";
 var CORE=["./","index.html","manifest.webmanifest","logo.png","icons/icon-192.png","icons/icon-512.png","icons/apple-touch-icon.png","fonts/comic-neue-400.woff2","fonts/comic-neue-700.woff2"];
 self.addEventListener("install",function(e){
   e.waitUntil(caches.open(VERSION).then(function(c){

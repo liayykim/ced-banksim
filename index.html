@@ -307,7 +307,9 @@ var LocalDB=(function(){
 (function(){
 "use strict";
 var DAY=86400000, WEEK=7*DAY, RATE=0.03, FEE_MIN=10000, FEE_AMT=1500, START_CENTS=10000;
-var BILLS=[["rent","Rent"],["electricity","Electricity"],["gas","Gas"],["transportation","Transportation"],["insurance","Insurance"],["internet","Internet"]];
+var BILLS=[["rent","Rent"],["utilities","Utilities"],["transportation","Transportation"],["healthcare","Healthcare"],["groceries","Groceries"]];
+var LEGACY=[["electricity","Electricity"],["gas","Gas"],["insurance","Insurance"],["internet","Internet"]];
+var ALLB=BILLS.concat(LEGACY);
 var LOGO_SRC="logo.png";
 var IDLE_MS=60000, WARN_MS=45000;
 
@@ -558,9 +560,9 @@ function owed(a){
   var k=Math.max(0,Math.floor((Date.now()-a.startAt)/WEEK)), fee=S.lateFees[a.bill]||0;
   return {base:a.cents,weeks:k,late:k*fee,total:a.cents+k*fee};
 }
-function anyLate(){return BILLS.some(function(b){return dueFor(b[0]).some(function(a){return owed(a).weeks>0;});});}
+function anyLate(){return ALLB.some(function(b){return dueFor(b[0]).some(function(a){return owed(a).weeks>0;});});}
 function vBills(){
-  var cards=BILLS.map(function(b){
+  var cards=ALLB.filter(function(b){return BILLS.indexOf(b)>-1||dueFor(b[0]).length>0;}).map(function(b){
     var due=dueFor(b[0]), lb=lastBill(b[0]), o=due.length?owed(due[0]):null, late=!!o&&o.weeks>0, note;
     if(o){
       note='Due since '+esc(dShort(due[0].startAt))+(due.length>1?' | '+(due.length-1)+' more due':'');
@@ -568,11 +570,6 @@ function vBills(){
     }else note=lb?'All paid. Last paid: '+esc(dShort(lb)):'Nothing due right now';
     return '<button class="bill'+(late?' late':'')+'" data-act="bill" data-id="'+b[0]+'"'+(due.length?'':' disabled')+'><span class="n">'+b[1]+(late?'<span class="latetag">'+ICON.warn+ICON.clock+'LATE</span>':'')+'</span><span class="a num">'+money(o?o.total:0)+'</span><span class="l">'+note+'</span></button>';
   }).join("");
-  var lg=lastBill("groceries");
-  cards+='<div class="bill groc"><span class="n">Groceries</span><span class="l" style="margin-top:0">Type the total of your grocery cart.'+(lg?' Last paid: '+esc(dShort(lg))+'.':'')+'</span>'+
-    '<div class="row"><label class="field" for="gval"><span style="font-size:1.6rem;font-weight:700">$</span><input id="gval" inputmode="decimal" autocomplete="off" placeholder="0.00" value="'+esc(S.gVal)+'"></label>'+
-    '<button class="btn gold" data-act="groc" style="min-width:200px">Review</button></div>'+
-    (S.gErr?'<div class="err">'+esc(S.gErr)+'</div>':'')+'</div>';
   return topbar()+'<div class="bar">'+back("home","Back")+'</div><div class="head"><h2 class="title">Pay a Bill</h2><div><span class="sub">Checking</span><b class="num" style="font-size:1.6rem">'+money(bal(S.tx,"checking"))+'</b></div></div><div class="bills">'+cards+'</div>';
 }
 
@@ -920,7 +917,7 @@ function vTHome(){
 }
 function effStart(a){return bumpDay(a.startAt,a.classId);}
 function arow(a){
-  var now=Date.now(), at=effStart(a), up=at>now, nm=BILLS.filter(function(b){return b[0]===a.bill;})[0];
+  var now=Date.now(), at=effStart(a), up=at>now, nm=ALLB.filter(function(b){return b[0]===a.bill;})[0];
   var arm=S.rmId===a.id, moved=dkey(new Date(at))!==dkey(new Date(a.startAt));
   return '<tr><td>'+esc(dShort(at))+'<span class="sub">'+esc(dTime(at))+(moved?' | moved from '+esc(dShort(a.startAt)):'')+'</span></td><td>'+esc(className(a.classId))+'</td><td>'+esc(nm?nm[1]:a.bill)+(a.recurring?'<span class="sub">Every week, 8:00 AM</span>':'')+'</td><td class="r num"><b>'+money(a.cents)+'</b></td>'+
     '<td><span class="tag '+(up?'sch':'act')+'">'+(up?'SCHEDULED':'ASSIGNED')+'</span></td>'+
@@ -1056,25 +1053,21 @@ function vTStudents(){
   var rows=list.map(function(st){
     var cj=currentJob(S.jlist.filter(function(j){return j.sid===st.key;}),st.classId);
     var arm=S.rmStu===st.key;
-    return '<tr><td>'+esc(st.name)+(arm?'<span class="sub err">Delete '+esc(st.name)+' and their account, money and paychecks for good? Tap Delete again.</span>':'')+'</td><td>'+esc(st.num||"-")+'</td>'+
+    return '<tr><td>'+esc(st.name)+(arm?'<span class="sub err">Delete '+esc(st.name)+' and their account, money and paychecks for good? Tap Delete again.</span>':'')+'</td>'+
       '<td><select data-chg="setclass" data-key="'+esc(st.key)+'" aria-label="Class for '+esc(st.name)+'">'+classOpts(st.classId,true)+'</select></td>'+
-      '<td><span class="code">'+esc(st.code||st.key)+'</span></td>'+
-      '<td><div class="row"><input type="text" inputmode="numeric" maxlength="12" data-idfor="'+esc(st.key)+'" value="'+esc(st.idCode||"")+'" placeholder="none" aria-label="ID code for '+esc(st.name)+'" style="width:7.5em"><button class="btn small line" data-act="saveidc" data-key="'+esc(st.key)+'">Save</button></div></td>'+
+      '<td><div class="row"><input type="text" inputmode="numeric" maxlength="12" data-idfor="'+esc(st.key)+'" value="'+esc(st.idCode||"")+'" placeholder="none" aria-label="ID number for '+esc(st.name)+'" style="width:7.5em"><button class="btn small line" data-act="saveidc" data-key="'+esc(st.key)+'">Save</button></div></td>'+
       '<td>'+esc(cj?cj.job:"-")+'</td>'+
       '<td class="r"><button class="btn small line" data-act="rmstu" data-key="'+esc(st.key)+'" style="min-width:120px">'+(arm?'Tap again to delete':'Delete')+'</button></td></tr>';
   }).join("");
   return ttop()+'<div class="bar">'+back("thome","Back")+'</div><h2 class="title">Students</h2>'+
    '<section class="panel form"><h3>Add a student</h3><div class="fgrid">'+
    '<div class="fld"><label for="sname">Name</label><input type="text" id="sname" autocomplete="off" maxlength="40" value="'+esc(f.name)+'"></div>'+
-   '<div class="fld"><label for="snum">Student ID number</label><input type="text" id="snum" autocomplete="off" maxlength="20" value="'+esc(f.num)+'"></div>'+
    '<div class="fld"><label for="sclass">Class</label><select id="sclass">'+classOpts(f.cls,true)+'</select></div>'+
-   '<div class="fld"><label for="scode">Card code</label><input type="text" id="scode" autocomplete="off" maxlength="60" value="'+esc(f.code)+'"></div>'+
-   '<div class="fld"><label for="sidc">ID code, 6 to 12 digits (leave blank to make one)</label><input type="text" id="sidc" inputmode="numeric" autocomplete="off" maxlength="12" value="'+esc(f.idc||"")+'"></div></div>'+
-   '<div class="sub">To fill in the card code: tap the Card code box, then tap the student\'s card on the reader.</div>'+
+   '<div class="fld"><label for="sidc">ID number, 6 to 12 digits (leave blank to make one)</label><input type="text" id="sidc" inputmode="numeric" autocomplete="off" maxlength="12" value="'+esc(f.idc||"")+'"></div></div>'+
    (S.serr?'<div class="err">'+esc(S.serr)+'</div>':'')+(S.smsg?'<div class="ok">'+esc(S.smsg)+'</div>':'')+
    '<div><button class="btn gold" data-act="addstudent" style="min-width:220px">Add student</button></div></section>'+
    '<section class="panel"><h3 style="margin-bottom:8px">All students</h3>'+
-   (list.length?'<div class="scroll"><table><thead><tr><th>Name</th><th>ID number</th><th>Class</th><th>Card code</th><th>ID code</th><th>Current job</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div>':'<div class="empty">No students yet.</div>')+'</section>';
+   (list.length?'<div class="scroll"><table><thead><tr><th>Name</th><th>Class</th><th>ID number</th><th>Current job</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div>':'<div class="empty">No students yet.</div>')+'</section>';
 }
 function jrow(j,activeId){
   var now=Date.now(), st=S.slist.filter(function(x){return x.key===j.sid;})[0];
@@ -1104,7 +1097,7 @@ function vTJobs(){
 }
 function readSForm(){
   if(S.view!=="tstudents")return;
-  S.sform={name:document.getElementById("sname").value,num:document.getElementById("snum").value,cls:document.getElementById("sclass").value,code:document.getElementById("scode").value,idc:document.getElementById("sidc").value};
+  S.sform={name:document.getElementById("sname").value,num:"",cls:document.getElementById("sclass").value,code:"",idc:document.getElementById("sidc").value};
 }
 function readJForm(){
   if(S.view!=="tjobs")return;
@@ -1135,25 +1128,23 @@ async function doSaveIdCode(skey){
 }
 async function doAddStudent(){
   readSForm();var f=S.sform;S.serr="";S.smsg="";
-  var name=f.name.trim(), num=f.num.trim(), code=f.code.trim().toUpperCase();
+  var name=f.name.trim();
   if(!name){S.serr="Type the student's name.";return go("tstudents");}
-  if(!code){S.serr="Tap in the Card code box, then tap the card on the reader.";return go("tstudents");}
-  var key=keyOf(code);
   busy=true;
   try{
-    var ex=await store.getStudent(key);
-    if(ex){S.serr="That card already belongs to "+ex.name+".";return go("tstudents");}
-    if(num&&S.slist.some(function(x){return x.num===num;})){S.serr="Another student already has ID number "+num+".";return go("tstudents");}
     var all=await store.getAllStudents();
     var idc=(f.idc||"").trim();
-    if(idc&&!/^[0-9]{6,12}$/.test(idc)){S.serr="The ID code must be 6 to 12 numbers.";return go("tstudents");}
-    if(idc&&all.some(function(x){return x.idCode===idc;})){S.serr="Another student already has ID code "+idc+".";return go("tstudents");}
+    if(idc&&!/^[0-9]{6,12}$/.test(idc)){S.serr="The ID number must be 6 to 12 numbers.";return go("tstudents");}
+    if(idc&&all.some(function(x){return x.idCode===idc;})){S.serr="Another student already has ID number "+idc+".";return go("tstudents");}
     if(!idc)idc=genIdCode(all);
+    var key=keyOf(idc);
+    var ex=await store.getStudent(key);
+    if(ex){S.serr="That ID number already belongs to "+ex.name+".";return go("tstudents");}
     var made=Date.now();
-    await store.addStudent(key,{name:name,num:num,classId:f.cls,code:code,idCode:idc,createdAt:made});
+    await store.addStudent(key,{name:name,num:"",classId:f.cls,code:idc,idCode:idc,createdAt:made});
     await store.addTx({sid:key,acct:"checking",amt:START_CENTS,kind:"deposit",label:"Starting balance",ts:made});
     S.slist=await store.getAllStudents();
-    S.sform={name:"",num:"",cls:f.cls,code:"",idc:""};S.smsg="Added "+name+" with a "+money(START_CENTS)+" starting balance in Checking. ID code: "+idc+".";go("tstudents");
+    S.sform={name:"",num:"",cls:f.cls,code:"",idc:""};S.smsg="Added "+name+" with a "+money(START_CENTS)+" starting balance in Checking. ID number: "+idc+".";go("tstudents");
   }catch(e){S.serr="Something went wrong. Check the list below. If the student is there, open their account to see if the starting balance arrived.";try{S.slist=await store.getAllStudents();}catch(x){}go("tstudents");}
   finally{busy=false;}
 }
@@ -1254,7 +1245,7 @@ async function doAssign(){
     for(var p=0;p<picks.length;p++){
       await store.addAssignment({classId:picks[p],bill:f.type,cents:cents,startAt:starts[picks[p]],createdAt:Date.now(),recurring:true});
     }
-    var nm=BILLS.filter(function(b){return b[0]===f.type;})[0][1];
+    var nm=ALLB.filter(function(b){return b[0]===f.type;})[0][1];
     f.msg="Assigned "+nm+" "+money(cents)+" to "+picks.length+(picks.length===1?" class":" classes")+", due every week at 8:00 AM.";
     f.amt="";
     S.alist=await store.getAllAssignments();
@@ -1496,13 +1487,7 @@ document.addEventListener("click",function(e){
   if(a==="trdo")return doTransfer();
   if(a==="checking"||a==="savings"||a==="paid"||a==="bills")return go(a);
   if(a==="getcheck")return doGetCheck();
-  if(a==="bill"){var id=el.getAttribute("data-id");var nm=BILLS.filter(function(b){return b[0]===id;})[0][1];var dd=dueFor(id);if(!dd.length)return go("bills");var oo=owed(dd[0]);S.bill={id:id,name:nm,cents:oo.base,late:oo.late,weeks:oo.weeks,aid:dd[0].id};return go("confirm");}
-  if(a==="groc"){
-    var inp=document.getElementById("gval");S.gVal=inp?inp.value:"";
-    var c=parseMoney(S.gVal);
-    if(c===null||c<=0){S.gErr="Type a number like 45.50";return go("bills");}
-    S.gErr="";S.gVal="";S.bill={id:"groceries",name:"Groceries",cents:c};return go("confirm");
-  }
+  if(a==="bill"){var id=el.getAttribute("data-id");var nm=ALLB.filter(function(b){return b[0]===id;})[0][1];var dd=dueFor(id);if(!dd.length)return go("bills");var oo=owed(dd[0]);S.bill={id:id,name:nm,cents:oo.base,late:oo.late,weeks:oo.weeks,aid:dd[0].id};return go("confirm");}
   if(a==="paybill")return doPayBill();
 });
 document.addEventListener("change",function(e){
