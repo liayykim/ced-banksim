@@ -1514,20 +1514,6 @@ document.addEventListener("keydown",function(e){
   if(e.key&&e.key.length===1)buf+=e.key;
 });
 
-/* sign out after a quiet minute so the next student starts fresh */
-setInterval(function(){
-  var idle=Date.now()-lastActive;
-  if(S.view==="unknown"||S.view==="error"){if(idle>8000)logout();return;}
-  if(S.view==="tpin"||S.view==="spin"||S.view==="icode"){if(idle>=60000)logout();return;}
-  if(S.teacher){if(idle>=180000)logout();return;}
-  if(!S.student){idleEl.hidden=true;return;}
-  if(S.view==="welcome")return;
-  if(idle>=IDLE_MS){logout();return;}
-  if(idle>=WARN_MS){idleEl.hidden=false;idleEl.textContent="Signing out in "+Math.ceil((IDLE_MS-idle)/1000)+" seconds. Tap the screen to stay.";}
-  else idleEl.hidden=true;
-},500);
-
-
 /* ---------- backup & restore (standalone build only) ---------- */
 var BK_FMT="bank-of-career-ed-backup";
 S.bkMsg="";S.bkErr="";S.bkPending=null;
