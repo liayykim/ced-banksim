@@ -309,7 +309,16 @@ var LocalDB=(function(){
 var DAY=86400000, WEEK=7*DAY, RATE=0.03, FEE_MIN=10000, FEE_AMT=1500, START_CENTS=10000;
 var BILLS=[["rent","Rent"],["utilities","Utilities"],["transportation","Transportation"],["healthcare","Healthcare"],["groceries","Groceries"]];
 var LEGACY=[["electricity","Electricity"],["gas","Gas"],["insurance","Insurance"],["internet","Internet"]];
-var ALLB=BILLS.concat(LEGACY);
+var OTHER=["other","Other"];
+var HOUSE=["housing","Housing"];
+/* homes 1 (cheapest) to 5. weekly cents = one quarter of the monthly figure: [id, label, weekly rent, weekly utilities] */
+var HOUSING=[["h1","1",12500,2500],["h2","2",18750,5000],["h3","3",25000,7500],["h4","4",31250,10000],["h5","5",37500,12500]];
+/* health plans: [id, label, weekly premium cents] */
+var PLANS=[["bronze","Bronze",1500],["silver","Silver",3000],["gold","Gold",4500]];
+/* transportation: [id, label, weekly cents]. cars = payment + insurance + gas */
+var TRANS=[["omny","OMNY card",3500],["car1","Car 1",9000],["car2","Car 2",15500],["car3","Car 3",25000]];
+function isPick(t){return t==="housing"||t==="healthcare"||t==="transportation";}
+var ALLB=BILLS.concat([OTHER],LEGACY);
 var LOGO_SRC="logo.png";
 var IDLE_MS=60000, WARN_MS=45000;
 
@@ -562,13 +571,18 @@ function owed(a){
 }
 function anyLate(){return ALLB.some(function(b){return dueFor(b[0]).some(function(a){return owed(a).weeks>0;});});}
 function vBills(){
-  var cards=ALLB.filter(function(b){return BILLS.indexOf(b)>-1||dueFor(b[0]).length>0;}).map(function(b){
+  var cards=ALLB.filter(function(b){return b!==OTHER&&(BILLS.indexOf(b)>-1||dueFor(b[0]).length>0);}).map(function(b){
     var due=dueFor(b[0]), lb=lastBill(b[0]), o=due.length?owed(due[0]):null, late=!!o&&o.weeks>0, note;
     if(o){
       note='Due since '+esc(dShort(due[0].startAt))+(due.length>1?' | '+(due.length-1)+' more due':'');
       if(late)note='Bill '+money(o.base)+' + late fees '+money(o.late)+'<br>'+note;
     }else note=lb?'All paid. Last paid: '+esc(dShort(lb)):'Nothing due right now';
     return '<button class="bill'+(late?' late':'')+'" data-act="bill" data-id="'+b[0]+'"'+(due.length?'':' disabled')+'><span class="n">'+b[1]+(late?'<span class="latetag">'+ICON.warn+ICON.clock+'LATE</span>':'')+'</span><span class="a num">'+money(o?o.total:0)+'</span><span class="l">'+note+'</span></button>';
+  }).join("");
+  cards+=dueFor("other").map(function(a){
+    var o=owed(a), late=o.weeks>0, nt='Due since '+esc(dShort(a.startAt));
+    if(late)nt='Bill '+money(o.base)+' + late fees '+money(o.late)+'<br>'+nt;
+    return '<button class="bill'+(late?' late':'')+'" data-act="bill" data-id="other" data-aid="'+esc(a.id)+'"><span class="n">'+esc(a.note||"Other")+(late?'<span class="latetag">'+ICON.warn+ICON.clock+'LATE</span>':'')+'</span><span class="a num">'+money(o.total)+'</span><span class="l">'+nt+'</span></button>';
   }).join("");
   return topbar()+'<div class="bar">'+back("home","Back")+'</div><div class="head"><h2 class="title">Pay a Bill</h2><div><span class="sub">Checking</span><b class="num" style="font-size:1.6rem">'+money(bal(S.tx,"checking"))+'</b></div></div><div class="bills">'+cards+'</div>';
 }
@@ -649,7 +663,7 @@ async function refresh(withInterest){
   S.tx=await store.getTx(S.key);
   S.classes=classesFrom(await store.getSetting("classes"));
   S.noClass=await store.getSetting("noClass");
-  S.assign=expandAssign(S.student.classId?await store.getAssignments(S.student.classId):[]);
+  S.assign=expandAssign((await store.getAllAssignments()).filter(function(a){return a.sid?a.sid===S.key:(!!S.student.classId&&a.classId===S.student.classId);}));
   S.lateFees=await store.getSetting("lateFees");
   S.jobs=await store.getJobs(S.key);
   if(withInterest)await processInterest();
@@ -820,7 +834,7 @@ function classesFrom(c){
   if(c.names)return defaultClasses().map(function(d,i){return {id:d.id,name:c.names[i]||d.name};});
   return defaultClasses();
 }
-function newForm(){var c={};classIds().forEach(function(id){c[id]={on:false,when:""};});return {type:"rent",amt:"",weeks:"1",cls:c,msg:"",err:""};}
+function newForm(){var c={};classIds().forEach(function(id){c[id]={on:false,when:""};});return {type:"housing",pick:"",amt:"",note:"",sids:{},ocls:"",owhen:"",weeks:"1",cls:c,msg:"",err:""};}
 async function sha(p){
   try{var b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode("bank-center:"+p));
     return Array.prototype.map.call(new Uint8Array(b),function(x){return ("0"+x.toString(16)).slice(-2);}).join("");}
@@ -919,28 +933,42 @@ function effStart(a){return bumpDay(a.startAt,a.classId);}
 function arow(a){
   var now=Date.now(), at=effStart(a), up=at>now, nm=ALLB.filter(function(b){return b[0]===a.bill;})[0];
   var arm=S.rmId===a.id, moved=dkey(new Date(at))!==dkey(new Date(a.startAt));
-  return '<tr><td>'+esc(dShort(at))+'<span class="sub">'+esc(dTime(at))+(moved?' | moved from '+esc(dShort(a.startAt)):'')+'</span></td><td>'+esc(className(a.classId))+'</td><td>'+esc(nm?nm[1]:a.bill)+(a.recurring?'<span class="sub">Every week, 8:00 AM</span>':'')+'</td><td class="r num"><b>'+money(a.cents)+'</b></td>'+
+  return '<tr><td>'+esc(dShort(at))+'<span class="sub">'+esc(dTime(at))+(moved?' | moved from '+esc(dShort(a.startAt)):'')+'</span></td><td>'+esc(a.sid?whoIs(a):className(a.classId))+'</td><td>'+esc(nm?nm[1]:a.bill)+(a.note?'<span class="sub">'+esc(a.note)+'</span>':'')+(a.recurring?'<span class="sub">Every week, 8:00 AM</span>':'<span class="sub">One time</span>')+'</td><td class="r num"><b>'+money(a.cents)+'</b></td>'+
     '<td><span class="tag '+(up?'sch':'act')+'">'+(up?'SCHEDULED':'ASSIGNED')+'</span></td>'+
     '<td class="r"><button class="btn small line" data-act="rm" data-id="'+esc(a.id)+'">'+(arm?'Tap again to remove':'Remove')+'</button></td></tr>';
 }
 function atable(list,empty){
   if(!list.length)return '<div class="empty">'+empty+'</div>';
-  return '<div class="scroll"><table><thead><tr><th>Starts</th><th>Class</th><th>Bill</th><th class="r">Amount</th><th>Status</th><th></th></tr></thead><tbody>'+list.map(arow).join("")+'</tbody></table></div>';
+  return '<div class="scroll"><table><thead><tr><th>Starts</th><th>For</th><th>Bill</th><th class="r">Amount</th><th>Status</th><th></th></tr></thead><tbody>'+list.map(arow).join("")+'</tbody></table></div>';
+}
+function whoIs(a){var st=S.slist.filter(function(x){return x.key===a.sid;})[0];return (st?st.name:"Removed student")+(a.classId?" ("+className(a.classId)+")":"");}
+function otherPicker(f){
+  var cid=f.ocls||(S.classes[0]?S.classes[0].id:"none");
+  var copts=S.classes.map(function(c){return '<option value="'+esc(c.id)+'"'+(cid===c.id?' selected':'')+'>'+esc(c.name)+'</option>';}).join("")+'<option value="none"'+(cid==="none"?' selected':'')+'>No class</option>';
+  var studs=S.slist.filter(function(st){return cid==="none"?!st.classId:st.classId===cid;}).sort(function(a,b){return a.name.localeCompare(b.name);});
+  var n=Object.keys(f.sids||{}).filter(function(k){return S.slist.some(function(x){return x.key===k;});}).length;
+  var list=studs.length?'<div class="fgrid">'+studs.map(function(st){return '<label class="crow chk" for="os-'+esc(st.key)+'"><input type="checkbox" id="os-'+esc(st.key)+'" data-sk="'+esc(st.key)+'"'+(f.sids&&f.sids[st.key]?' checked':'')+'>'+esc(st.name)+(isPick(f.type)?currentTag(st.key,f.type):"")+'</label>';}).join("")+'</div>':'<div class="empty">No students in this class yet.</div>';
+  return '<div class="fld"><span style="font-weight:700">Which students</span><span class="sub">'+(isPick(f.type)?"Each student you check is billed every week at 8:00 AM, starting on the date you pick.":"This bill is charged one time at 8:00 AM on the date you pick.")+' Choose a class, check the students, then pick another class to add more. If the class does not meet that day, or it is a no class day, the bill moves to the next day that class meets. Leave the date empty to start today.</span></div>'+
+   '<div class="fgrid"><div class="fld"><label for="ocls">Class</label><select id="ocls" data-chg="ocls">'+copts+'</select></div>'+
+   '<div class="fld"><label for="owhen">'+(isPick(f.type)?"First bill date":"Bill date")+'</label><input type="date" id="owhen" value="'+esc(f.owhen||"")+'"></div></div>'+
+   list+
+   '<div class="head" style="gap:10px;justify-content:flex-start"><button class="btn small line" data-act="oclsall">Select all in this class</button><button class="btn small line" data-act="oall">Select all students</button><button class="btn small line" data-act="onone">Clear</button></div>'+
+   '<div class="sub"><b>'+n+'</b> '+(n===1?'student':'students')+' selected</div>';
 }
 function vTAssign(){
   var f=S.tform, now=Date.now();
-  var opts=BILLS.map(function(b){return '<option value="'+b[0]+'"'+(f.type===b[0]?' selected':'')+'>'+b[1]+'</option>';}).join("");
+  var opts=[HOUSE].concat(BILLS.filter(function(b){return b[0]!=="rent"&&b[0]!=="utilities";}),[OTHER]).map(function(b){return '<option value="'+b[0]+'"'+(f.type===b[0]?' selected':'')+'>'+b[1]+'</option>';}).join("");
   var rows=classIds().map(function(id){var c=f.cls[id]||{on:false,when:""};
     return '<div class="crow"><label class="chk" for="on-'+id+'"><input type="checkbox" id="on-'+id+'"'+(c.on?' checked':'')+'>'+esc(className(id))+'</label>'+
-      '<div class="when"><label class="sub" for="wh-'+id+'">First bill date</label><input type="date" id="wh-'+id+'" value="'+esc(c.when)+'"></div></div>';}).join("");
+      '<div class="when"><label class="sub" for="wh-'+id+'">'+(f.type==="other"?"Bill date":"First bill date")+'</label><input type="date" id="wh-'+id+'" value="'+esc(c.when)+'"></div></div>';}).join("");
   var up=S.alist.filter(function(a){return effStart(a)>now;}).sort(function(a,b){return effStart(a)-effStart(b);});
   var past=S.alist.filter(function(a){return effStart(a)<=now;}).sort(function(a,b){return effStart(b)-effStart(a);}).slice(0,30);
   return ttop()+'<div class="bar">'+back("thome","Back")+'</div><h2 class="title">Assign Bills</h2>'+
    '<section class="panel form"><div class="fgrid">'+
-   '<div class="fld"><label for="btype">Type of bill</label><select id="btype">'+opts+'</select></div>'+
-   '<div class="fld"><label for="bamt">Amount</label><div class="money"><b>$</b><input id="bamt" type="text" inputmode="decimal" autocomplete="off" placeholder="0.00" value="'+esc(f.amt)+'"></div></div></div>'+
-   '<div class="fld"><div class="head"><span style="font-weight:700">Which classes, and when</span><button class="btn small line" data-act="allcls">Select all classes</button></div>'+
-   '<span class="sub">The bill repeats every 7 days at 8:00 AM. If a class does not meet that day, or the day is checked as a no class day, the bill moves to the next day that class meets, and later weeks stay on the new day. Leave the date empty to start today.</span></div>'+rows+
+   '<div class="fld"><label for="btype">Type of bill</label><select id="btype" data-chg="btype">'+opts+'</select></div>'+
+   (isPick(f.type)?pickField(f):'<div class="fld"><label for="bamt">Amount</label><div class="money"><b>$</b><input id="bamt" type="text" inputmode="decimal" autocomplete="off" placeholder="0.00" value="'+esc(f.amt)+'"></div></div>')+(f.type==="other"?'<div class="fld"><label for="bnote">Note (students see this)</label><input type="text" id="bnote" autocomplete="off" maxlength="40" placeholder="Example: Concert tickets" value="'+esc(f.note||"")+'"></div>':'')+'</div>'+
+   ((f.type==="other"||isPick(f.type))?otherPicker(f):'<div class="fld"><div class="head"><span style="font-weight:700">Which classes, and when</span><button class="btn small line" data-act="allcls">Select all classes</button></div>'+
+   '<span class="sub">The bill repeats every 7 days at 8:00 AM. If a class does not meet that day, or the day is checked as a no class day, the bill moves to the next day that class meets, and later weeks stay on the new day. Leave the date empty to start today.</span></div>'+rows)+
    (f.err?'<div class="err">'+esc(f.err)+'</div>':'')+(f.msg?'<div class="ok">'+esc(f.msg)+'</div>':'')+
    '<div><button class="btn gold" data-act="assign" style="min-width:240px;min-height:72px;font-size:1.3rem">Assign bill</button></div></section>'+
    '<section class="panel"><h3 style="margin-bottom:8px">Scheduled for later</h3>'+atable(up,'Nothing scheduled.')+'</section>'+
@@ -1224,13 +1252,87 @@ async function doBonus(){
 function readForm(){
   if(S.view!=="tassign")return;
   var f=S.tform;
-  f.type=document.getElementById("btype").value;f.amt=document.getElementById("bamt").value;
-  classIds().forEach(function(id){f.cls[id]={on:document.getElementById("on-"+id).checked,when:document.getElementById("wh-"+id).value};});
+  f.type=document.getElementById("btype").value;var ae=document.getElementById("bamt");if(ae)f.amt=ae.value;var pe=document.getElementById("bpick");if(pe)f.pick=pe.value;var ne=document.getElementById("bnote");if(ne)f.note=ne.value;
+  if(document.getElementById("ocls")){f.ocls=document.getElementById("ocls").value;var ow=document.getElementById("owhen");if(ow)f.owhen=ow.value;Array.prototype.forEach.call(document.querySelectorAll("input[data-sk]"),function(c){var k=c.getAttribute("data-sk");if(c.checked)f.sids[k]=1;else delete f.sids[k];});}
+  classIds().forEach(function(id){var o=document.getElementById("on-"+id);if(o)f.cls[id]={on:o.checked,when:document.getElementById("wh-"+id).value};});
+}
+
+function pickSet(t){return t==="housing"?HOUSING:t==="healthcare"?PLANS:TRANS;}
+function pickField(f){
+  var isH=f.type==="housing", lab=isH?"Home":f.type==="healthcare"?"Insurance plan":"Transportation";
+  var o='<option value="">Choose'+(isH?" a home":f.type==="healthcare"?" a plan":" an option")+'</option>'+(isH?HOUSING.map(function(h){return '<option value="'+h[0]+'"'+(f.pick===h[0]?' selected':'')+'>Home '+h[1]+' | rent '+money(h[2])+' + utilities '+money(h[3])+' a week</option>';}):pickSet(f.type).map(function(p){return '<option value="'+p[0]+'"'+(f.pick===p[0]?' selected':'')+'>'+p[1]+' | '+money(p[2])+' a week</option>';})).join("");
+  return '<div class="fld"><label for="bpick">'+lab+'</label><select id="bpick">'+o+'</select></div>';
+}
+function currentOf(k,type){
+  var bill=type==="housing"?"rent":type, m=null;
+  S.alist.forEach(function(a){if(a.sid===k&&a.bill===bill&&a.recurring&&(!m||a.createdAt>m.createdAt))m=a;});
+  return m;
+}
+function currentTag(k,type){
+  var m=currentOf(k,type);
+  return '<span class="sub" style="display:inline;margin-left:8px">'+(m&&m.note?esc(m.note):(m?"assigned":"none yet"))+'</span>';
+}
+async function doAssignPick(f){
+  var isH=f.type==="housing";
+  var opt=pickSet(f.type).filter(function(x){return x[0]===f.pick;})[0];
+  if(!opt){f.err=isH?"Choose a home.":f.type==="healthcare"?"Choose an insurance plan.":"Choose a transportation option.";return go("tassign");}
+  var sk=Object.keys(f.sids||{}).filter(function(k){return S.slist.some(function(x){return x.key===k;});});
+  if(!sk.length){f.err="Check at least one student.";return go("tassign");}
+  var ow=f.owhen, odp=ow?ow.split("-"):null;
+  var ost=odp?new Date(+odp[0],+odp[1]-1,+odp[2],8,0,0).getTime():new Date().setHours(8,0,0,0);
+  if(isNaN(ost)){f.err="The first bill date is not a real date.";return go("tassign");}
+  var kinds=isH?["rent","utilities"]:[f.type], clash=[], tname=f.type==="healthcare"?"a healthcare bill":"a transportation bill";
+  sk.forEach(function(k){
+    var stu=S.slist.filter(function(x){return x.key===k;})[0];
+    var has=S.alist.some(function(a){return a.recurring&&kinds.indexOf(a.bill)>-1&&(a.sid?a.sid===k:(!!stu.classId&&a.classId===stu.classId));});
+    if(has)clash.push(stu.name);
+  });
+  if(clash.length){f.err="Already has "+(isH?"rent or utilities":tname)+" assigned: "+clash.join(", ")+". Remove "+(isH?"those bills":"that bill")+" in the lists below first (it may be a whole-class bill), then assign again.";return go("tassign");}
+  busy=true;
+  try{
+    for(var q=0;q<sk.length;q++){
+      var stu2=S.slist.filter(function(x){return x.key===sk[q];})[0], now=Date.now();
+      if(isH){
+        await store.addAssignment({classId:stu2.classId||"",sid:sk[q],bill:"rent",cents:opt[2],startAt:ost,createdAt:now,recurring:true,note:"Home "+opt[1]});
+        await store.addAssignment({classId:stu2.classId||"",sid:sk[q],bill:"utilities",cents:opt[3],startAt:ost,createdAt:now,recurring:true,note:"Home "+opt[1]});
+      }else{
+        await store.addAssignment({classId:stu2.classId||"",sid:sk[q],bill:f.type,cents:opt[2],startAt:ost,createdAt:now,recurring:true,note:opt[1]});
+      }
+    }
+    f.msg="Assigned "+(isH?"Home "+opt[1]+" (rent "+money(opt[2])+" + utilities "+money(opt[3])+")":opt[1]+(f.type==="healthcare"?" healthcare":" transportation")+" ("+money(opt[2])+")")+" to "+sk.length+(sk.length===1?" student":" students")+", due every week at 8:00 AM.";
+    f.sids={};
+    S.alist=await store.getAllAssignments();
+    go("tassign");
+  }catch(e){f.err="Something went wrong. Check the list below before trying again.";try{S.alist=await store.getAllAssignments();}catch(x){}go("tassign");}
+  finally{busy=false;}
 }
 async function doAssign(){
   readForm();var f=S.tform;f.err="";f.msg="";
+  if(isPick(f.type))return doAssignPick(f);
   var cents=parseMoney(f.amt);
   if(cents===null||cents<=0){f.err="Type the bill amount, like 120 or 45.50.";return go("tassign");}
+  var isOther=f.type==="other", note=(f.note||"").trim();
+  if(isOther&&!note){f.err="Type a note for this bill, like Concert tickets.";return go("tassign");}
+  if(isOther){
+    var sk=Object.keys(f.sids||{}).filter(function(k){return S.slist.some(function(x){return x.key===k;});});
+    if(!sk.length){f.err="Check at least one student.";return go("tassign");}
+    var ow=f.owhen, odp=ow?ow.split("-"):null;
+    var ost=odp?new Date(+odp[0],+odp[1]-1,+odp[2],8,0,0).getTime():new Date().setHours(8,0,0,0);
+    if(isNaN(ost)){f.err="The bill date is not a real date.";return go("tassign");}
+    busy=true;
+    try{
+      for(var q=0;q<sk.length;q++){
+        var stu=S.slist.filter(function(x){return x.key===sk[q];})[0];
+        await store.addAssignment({classId:stu.classId||"",sid:sk[q],bill:"other",cents:cents,startAt:ost,createdAt:Date.now(),recurring:false,note:note});
+      }
+      f.msg="Assigned "+note+" "+money(cents)+" to "+sk.length+(sk.length===1?" student":" students")+", charged one time.";
+      f.amt="";f.note="";f.sids={};
+      S.alist=await store.getAllAssignments();
+      go("tassign");
+    }catch(e){f.err="Something went wrong. Check the list below before trying again.";try{S.alist=await store.getAllAssignments();}catch(x){}go("tassign");}
+    finally{busy=false;}
+    return;
+  }
   var picks=classIds().filter(function(id){return f.cls[id]&&f.cls[id].on;});
   if(!picks.length){f.err="Check at least one class.";return go("tassign");}
   var starts={};
@@ -1243,11 +1345,11 @@ async function doAssign(){
   busy=true;
   try{
     for(var p=0;p<picks.length;p++){
-      await store.addAssignment({classId:picks[p],bill:f.type,cents:cents,startAt:starts[picks[p]],createdAt:Date.now(),recurring:true});
+      var rec={classId:picks[p],bill:f.type,cents:cents,startAt:starts[picks[p]],createdAt:Date.now(),recurring:!isOther};if(isOther)rec.note=note;await store.addAssignment(rec);
     }
     var nm=ALLB.filter(function(b){return b[0]===f.type;})[0][1];
-    f.msg="Assigned "+nm+" "+money(cents)+" to "+picks.length+(picks.length===1?" class":" classes")+", due every week at 8:00 AM.";
-    f.amt="";
+    f.msg="Assigned "+(isOther?note:nm)+" "+money(cents)+" to "+picks.length+(picks.length===1?" class":" classes")+(isOther?", charged one time.":", due every week at 8:00 AM.");
+    f.amt="";if(isOther)f.note="";
     S.alist=await store.getAllAssignments();
     go("tassign");
   }catch(e){f.err="Something went wrong. Check the list below before trying again.";try{S.alist=await store.getAllAssignments();}catch(x){}go("tassign");}
@@ -1277,7 +1379,7 @@ async function teacherAct(a,el){
   if(a==="thome"){busy=true;try{S.slist=await store.getAllStudents();}catch(e){}finally{busy=false;}}
   try{
     if(a==="thome"){return go("thome");}
-    if(a==="tassign"){busy=true;try{S.alist=await store.getAllAssignments();}finally{busy=false;}S.rmId=null;S.tform.err="";S.tform.msg="";return go("tassign");}
+    if(a==="tassign"){busy=true;try{S.alist=await store.getAllAssignments();S.slist=await store.getAllStudents();}finally{busy=false;}S.rmId=null;S.tform.err="";S.tform.msg="";return go("tassign");}
     if(a==="tclasses"){S.cmsg="";S.cerr="";S.rmCls=null;return go("tclasses");}
     if(a==="tnoclass"){S.ncerr="";return go("tnoclass");}
     if(a==="ncday"){
@@ -1395,6 +1497,11 @@ async function teacherAct(a,el){
       busy=true;try{await store.setSetting("fees",nf);}finally{busy=false;}
       S.fees=nf;return go("tfees");
     }
+    if(a==="ocls"){readForm();return go("tassign");}
+    if(a==="oclsall"){readForm();var of=S.tform,oc=of.ocls||(S.classes[0]?S.classes[0].id:"none");S.slist.forEach(function(st){if(oc==="none"?!st.classId:st.classId===oc)of.sids[st.key]=1;});return go("tassign");}
+    if(a==="oall"){readForm();S.slist.forEach(function(st){S.tform.sids[st.key]=1;});return go("tassign");}
+    if(a==="onone"){readForm();S.tform.sids={};return go("tassign");}
+    if(a==="btype"){var oldT=S.tform.type;readForm();if(S.tform.type!==oldT)S.tform.pick="";return go("tassign");}
     if(a==="allcls"){readForm();var all=classIds().every(function(id){return S.tform.cls[id].on;});classIds().forEach(function(id){S.tform.cls[id].on=!all;});return go("tassign");}
     if(a==="assign")return doAssign();
     if(a==="rm"){
@@ -1487,7 +1594,7 @@ document.addEventListener("click",function(e){
   if(a==="trdo")return doTransfer();
   if(a==="checking"||a==="savings"||a==="paid"||a==="bills")return go(a);
   if(a==="getcheck")return doGetCheck();
-  if(a==="bill"){var id=el.getAttribute("data-id");var nm=ALLB.filter(function(b){return b[0]===id;})[0][1];var dd=dueFor(id);if(!dd.length)return go("bills");var oo=owed(dd[0]);S.bill={id:id,name:nm,cents:oo.base,late:oo.late,weeks:oo.weeks,aid:dd[0].id};return go("confirm");}
+  if(a==="bill"){var id=el.getAttribute("data-id");var pk=el.getAttribute("data-aid");var nm=ALLB.filter(function(b){return b[0]===id;})[0][1];var dd=dueFor(id);if(pk)dd=dd.filter(function(x){return x.id===pk;});if(!dd.length)return go("bills");if(id==="other")nm=dd[0].note||"Other";var oo=owed(dd[0]);S.bill={id:id,name:nm,cents:oo.base,late:oo.late,weeks:oo.weeks,aid:dd[0].id};return go("confirm");}
   if(a==="paybill")return doPayBill();
 });
 document.addEventListener("change",function(e){
